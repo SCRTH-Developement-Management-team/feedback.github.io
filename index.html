@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,7 +12,7 @@
     --border: #262a33;
     --text: #e7e9ee;
     --muted: #8b8fa3;
-    --accent: #5865f2; /* couleur "Discord blurple", cohérent avec le sujet */
+    --accent: #5865f2; /* "Discord blurple", consistent with the subject */
     --accent-hover: #4752c4;
     --danger: #ed4245;
     --success: #3ba55d;
@@ -34,7 +34,7 @@
 
   .hidden { display: none !important; }
 
-  /* ---------- Écran de connexion ---------- */
+  /* ---------- Login screen ---------- */
 
   .login-card {
     width: 100%;
@@ -84,6 +84,12 @@
     border-color: var(--accent);
   }
 
+  .hint {
+    color: var(--muted);
+    font-size: 12px;
+    margin: -10px 0 16px;
+  }
+
   button {
     cursor: pointer;
     border: none;
@@ -120,7 +126,7 @@
     min-height: 16px;
   }
 
-  /* ---------- Écran principal ---------- */
+  /* ---------- Main screen ---------- */
 
   .app {
     width: 100%;
@@ -200,7 +206,7 @@
     background: var(--panel-2);
   }
 
-  /* ---------- Preview d'embed façon Discord ---------- */
+  /* ---------- Discord-style embed preview ---------- */
 
   .discord-preview {
     background: var(--panel-2);
@@ -208,6 +214,17 @@
     padding: 16px;
     position: sticky;
     top: 24px;
+  }
+
+  .target-badge {
+    display: inline-block;
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 10px;
+    margin-bottom: 12px;
   }
 
   .embed-box {
@@ -298,76 +315,86 @@
 </head>
 <body>
 
-  <!-- ============ ÉCRAN DE CONNEXION ============ -->
+  <!-- ============ LOGIN SCREEN ============ -->
   <div class="login-card" id="login-screen">
-    <h1>Feedback vers Discord</h1>
-    <p class="subtitle">Connecte-toi pour envoyer un embed dans le salon de feedback.</p>
+    <h1>Feedback to Discord</h1>
+    <p class="subtitle">Log in to save a feedback embed for a user.</p>
 
-    <label for="login-username">Identifiant</label>
+    <label for="login-username">Username</label>
     <input type="text" id="login-username" autocomplete="username">
 
-    <label for="login-password">Mot de passe</label>
+    <label for="login-password">Password</label>
     <input type="password" id="login-password" autocomplete="current-password">
 
     <div class="error-msg" id="login-error"></div>
 
-    <button id="login-btn" style="width:100%">Se connecter</button>
+    <button id="login-btn" style="width:100%">Log in</button>
   </div>
 
-  <!-- ============ ÉCRAN PRINCIPAL ============ -->
+  <!-- ============ MAIN SCREEN ============ -->
   <div class="app hidden" id="app-screen">
     <div class="topbar">
-      <h1>Nouveau feedback</h1>
-      <button class="secondary" id="logout-btn">Se déconnecter</button>
+      <h1>New feedback</h1>
+      <button class="secondary" id="logout-btn">Log out</button>
     </div>
 
     <div class="panel">
-      <h2>Contenu de l'embed</h2>
+      <h2>Recipient</h2>
 
-      <label for="f-title">Titre</label>
-      <input type="text" id="f-title" maxlength="256" placeholder="Ex: Nouveau retour utilisateur">
+      <label for="f-target-user">Discord User ID</label>
+      <input type="text" id="f-target-user" placeholder="e.g. 123456789012345678" inputmode="numeric">
+      <div class="hint">
+        This is the numeric Discord ID of the user this feedback is for.
+        The user will be able to see it with the <code>/feedback</code> command.
+        Enable Developer Mode in Discord (Settings → Advanced) to copy a user's ID.
+      </div>
+
+      <h2>Embed content</h2>
+
+      <label for="f-title">Title</label>
+      <input type="text" id="f-title" maxlength="256" placeholder="e.g. New performance review">
 
       <label for="f-description">Description</label>
-      <textarea id="f-description" maxlength="4096" placeholder="Détaille le feedback ici..."></textarea>
+      <textarea id="f-description" maxlength="4096" placeholder="Write the feedback here..."></textarea>
 
       <div class="row-2">
         <div>
-          <label for="f-color">Couleur</label>
+          <label for="f-color">Color</label>
           <div class="color-input">
             <input type="color" id="f-color" value="#5865f2">
             <input type="text" id="f-color-hex" value="#5865f2" style="margin-bottom:0">
           </div>
         </div>
         <div>
-          <label for="f-author">Auteur (affiché en haut)</label>
-          <input type="text" id="f-author" maxlength="256" placeholder="Ex: Retour depuis le site">
+          <label for="f-author">Author (shown at the top)</label>
+          <input type="text" id="f-author" maxlength="256" placeholder="e.g. SCRTH Staff Team">
         </div>
       </div>
 
       <div class="row-2">
         <div>
-          <label for="f-thumbnail">Miniature (URL image)</label>
+          <label for="f-thumbnail">Thumbnail (image URL)</label>
           <input type="url" id="f-thumbnail" placeholder="https://...">
         </div>
         <div>
-          <label for="f-image">Grande image (URL)</label>
+          <label for="f-image">Large image (URL)</label>
           <input type="url" id="f-image" placeholder="https://...">
         </div>
       </div>
 
-      <label for="f-footer">Texte du pied de page</label>
-      <input type="text" id="f-footer" maxlength="2048" placeholder="Ex: Envoyé via le site de feedback">
+      <label for="f-footer">Footer text</label>
+      <input type="text" id="f-footer" maxlength="2048" placeholder="e.g. Sent via the feedback portal">
 
       <div class="field-row" style="margin-top: 4px;">
-        <label style="grid-column: 1 / -1; margin-bottom: 0;">Champs additionnels</label>
+        <label style="grid-column: 1 / -1; margin-bottom: 0;">Additional fields</label>
       </div>
       <div id="fields-container"></div>
-      <button class="secondary" id="add-field-btn" type="button">+ Ajouter un champ</button>
+      <button class="secondary" id="add-field-btn" type="button">+ Add a field</button>
 
       <div class="field-row" style="margin-top:16px;">
         <div class="checkbox-wrap">
           <input type="checkbox" id="f-timestamp" style="width:auto;margin:0;">
-          <label for="f-timestamp" style="margin:0;">Ajouter l'horodatage</label>
+          <label for="f-timestamp" style="margin:0;">Add timestamp</label>
         </div>
       </div>
 
@@ -375,13 +402,14 @@
       <div class="success-msg" id="submit-success"></div>
 
       <div class="actions">
-        <button id="submit-btn">Envoyer sur Discord</button>
+        <button id="submit-btn">Save feedback</button>
       </div>
     </div>
 
     <div class="panel discord-preview">
-      <h2>Aperçu</h2>
-      <div id="preview-empty" class="empty-hint">Rien à afficher pour l'instant.</div>
+      <h2>Preview</h2>
+      <div class="target-badge" id="preview-target">No recipient set</div>
+      <div id="preview-empty" class="empty-hint">Nothing to show yet.</div>
       <div class="embed-box hidden" id="preview-box">
         <div id="preview-author" class="embed-author hidden"></div>
         <img id="preview-thumb" class="embed-thumb hidden" src="">
@@ -396,12 +424,12 @@
 
 <script>
   // -------------------------------------------------------------------
-  // CONFIG : remplace par l'adresse de ton API sur Wispbyte
+  // CONFIG: replace with your API address on Wispbyte
   // -------------------------------------------------------------------
   const API_BASE_URL = "https://feedback.wispbyte.app";
 
   // -------------------------------------------------------------------
-  // Éléments
+  // Elements
   // -------------------------------------------------------------------
   const loginScreen = document.getElementById('login-screen');
   const appScreen = document.getElementById('app-screen');
@@ -412,6 +440,7 @@
   const loginError = document.getElementById('login-error');
   const logoutBtn = document.getElementById('logout-btn');
 
+  const fTargetUser = document.getElementById('f-target-user');
   const fTitle = document.getElementById('f-title');
   const fDescription = document.getElementById('f-description');
   const fColor = document.getElementById('f-color');
@@ -431,7 +460,7 @@
   let extraFields = []; // { name, value, inline }
 
   // -------------------------------------------------------------------
-  // Session (token stocké localement pour ne pas se reconnecter à chaque fois)
+  // Session (token kept locally so you don't have to log in every time)
   // -------------------------------------------------------------------
   function getToken() { return localStorage.getItem('feedback_token'); }
   function setToken(t) { localStorage.setItem('feedback_token', t); }
@@ -449,7 +478,7 @@
   if (getToken()) showApp();
 
   // -------------------------------------------------------------------
-  // Connexion / déconnexion
+  // Login / logout
   // -------------------------------------------------------------------
   loginBtn.addEventListener('click', async () => {
     loginError.textContent = '';
@@ -468,7 +497,7 @@
       const data = await res.json();
 
       if (!res.ok) {
-        loginError.textContent = data.error || 'Connexion impossible.';
+        loginError.textContent = data.error || 'Could not log in.';
         return;
       }
 
@@ -476,7 +505,7 @@
       loginPassword.value = '';
       showApp();
     } catch (err) {
-      loginError.textContent = "Impossible de contacter le serveur.";
+      loginError.textContent = "Could not reach the server.";
     } finally {
       loginBtn.disabled = false;
     }
@@ -495,7 +524,7 @@
   });
 
   // -------------------------------------------------------------------
-  // Champs dynamiques
+  // Dynamic fields
   // -------------------------------------------------------------------
   function renderFieldRows() {
     fieldsContainer.innerHTML = '';
@@ -504,11 +533,11 @@
       row.className = 'field-row';
       row.innerHTML = `
         <div>
-          <label>Nom du champ</label>
+          <label>Field name</label>
           <input type="text" data-index="${index}" data-key="name" value="${escapeAttr(field.name)}" style="margin-bottom:0">
         </div>
         <div>
-          <label>Valeur</label>
+          <label>Value</label>
           <input type="text" data-index="${index}" data-key="value" value="${escapeAttr(field.value)}" style="margin-bottom:0">
         </div>
         <button type="button" class="remove-field" data-index="${index}">✕</button>
@@ -536,7 +565,7 @@
   }
 
   addFieldBtn.addEventListener('click', () => {
-    if (extraFields.length >= 25) return; // limite Discord
+    if (extraFields.length >= 25) return; // Discord's limit
     extraFields.push({ name: '', value: '', inline: true });
     renderFieldRows();
     updatePreview();
@@ -552,7 +581,7 @@
   }
 
   // -------------------------------------------------------------------
-  // Synchro couleur (picker <-> champ texte)
+  // Color sync (picker <-> text field)
   // -------------------------------------------------------------------
   fColor.addEventListener('input', () => {
     fColorHex.value = fColor.value;
@@ -565,14 +594,19 @@
     updatePreview();
   });
 
-  [fTitle, fDescription, fAuthor, fThumbnail, fImage, fFooter, fTimestamp].forEach((el) => {
+  [fTargetUser, fTitle, fDescription, fAuthor, fThumbnail, fImage, fFooter, fTimestamp].forEach((el) => {
     el.addEventListener('input', updatePreview);
   });
 
   // -------------------------------------------------------------------
-  // Aperçu live façon Discord
+  // Live Discord-style preview
   // -------------------------------------------------------------------
   function updatePreview() {
+    const targetBadge = document.getElementById('preview-target');
+    targetBadge.textContent = fTargetUser.value
+      ? `For user ID: ${fTargetUser.value}`
+      : 'No recipient set';
+
     const hasContent = fTitle.value || fDescription.value || fAuthor.value || extraFields.some(f => f.name || f.value);
 
     document.getElementById('preview-empty').classList.toggle('hidden', hasContent);
@@ -622,20 +656,26 @@
   }
 
   // -------------------------------------------------------------------
-  // Envoi du feedback
+  // Submit feedback
   // -------------------------------------------------------------------
   submitBtn.addEventListener('click', async () => {
     submitError.textContent = '';
     submitSuccess.textContent = '';
 
+    if (!fTargetUser.value || !/^\d{15,25}$/.test(fTargetUser.value.trim())) {
+      submitError.textContent = 'Enter a valid Discord user ID (numbers only).';
+      return;
+    }
+
     if (!fTitle.value && !fDescription.value) {
-      submitError.textContent = 'Ajoute au moins un titre ou une description.';
+      submitError.textContent = 'Add at least a title or a description.';
       return;
     }
 
     submitBtn.disabled = true;
 
     const payload = {
+      targetUserId: fTargetUser.value.trim(),
       title: fTitle.value || undefined,
       description: fDescription.value || undefined,
       color: fColorHex.value,
@@ -662,18 +702,18 @@
       if (res.status === 401) {
         clearToken();
         showLogin();
-        loginError.textContent = 'Session expirée, reconnecte-toi.';
+        loginError.textContent = 'Session expired, please log in again.';
         return;
       }
 
       if (!res.ok) {
-        submitError.textContent = data.error || "Erreur lors de l'envoi.";
+        submitError.textContent = data.error || "Something went wrong while saving.";
         return;
       }
 
-      submitSuccess.textContent = 'Feedback envoyé sur Discord ✔';
+      submitSuccess.textContent = 'Feedback saved and ready for the user ✔';
 
-      // Reset du formulaire
+      // Reset the form (keep the target user ID in case you're adding several)
       fTitle.value = '';
       fDescription.value = '';
       fAuthor.value = '';
@@ -685,7 +725,7 @@
       renderFieldRows();
       updatePreview();
     } catch (err) {
-      submitError.textContent = "Impossible de contacter le serveur.";
+      submitError.textContent = "Could not reach the server.";
     } finally {
       submitBtn.disabled = false;
     }
