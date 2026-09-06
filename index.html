@@ -381,6 +381,11 @@
           <input type="url" id="f-image" placeholder="https://...">
         </div>
       </div>
+      <div class="hint" style="margin-top:-10px;">
+        Paste a direct link to an image (starts with <code>http://</code> or <code>https://</code>) —
+        not a pasted screenshot or a Discord attachment upload button. If you don't have a link yet,
+        upload the image to a Discord channel first and copy its link, or use a host like Imgur.
+      </div>
 
       <label for="f-footer">Footer text</label>
       <input type="text" id="f-footer" maxlength="2048" placeholder="e.g. Sent via the feedback portal">
@@ -669,6 +674,17 @@
 
     if (!fTitle.value && !fDescription.value) {
       submitError.textContent = 'Add at least a title or a description.';
+      return;
+    }
+
+    const isValidEmbedUrl = (value) => !value || /^https?:\/\//i.test(value);
+
+    if (!isValidEmbedUrl(fThumbnail.value)) {
+      submitError.textContent = 'Thumbnail must be a direct http(s) link, not a pasted image.';
+      return;
+    }
+    if (!isValidEmbedUrl(fImage.value)) {
+      submitError.textContent = 'Image must be a direct http(s) link, not a pasted image.';
       return;
     }
 
