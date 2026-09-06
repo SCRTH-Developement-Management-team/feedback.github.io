@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback → Discord</title>
+<style>
+  :root {
+    --bg: #0e0f13;
+    --panel: #16181d;
+    --panel-2: #1c1f26;
+    --border: #262a33;
+    --text: #e7e9ee;
+    --muted: #8b8fa3;
+    --accent: #5865f2; /* couleur "Discord blurple", cohérent avec le sujet */
+    --accent-hover: #4752c4;
+    --danger: #ed4245;
+    --success: #3ba55d;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .hidden { display: none !important; }
+
+  /* ---------- Écran de connexion ---------- */
+
+  .login-card {
+    width: 100%;
+    max-width: 360px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+  }
+
+  .login-card h1 {
+    font-size: 20px;
+    margin: 0 0 4px;
+  }
+
+  .login-card p.subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0 0 24px;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  input[type="url"],
+  textarea {
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--accent);
+    color: white;
+    transition: background 0.15s ease;
+  }
+
+  button:hover { background: var(--accent-hover); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  button.secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  button.secondary:hover { background: var(--panel-2); color: var(--text); }
+
+  .error-msg {
+    color: var(--danger);
+    font-size: 13px;
+    margin: -8px 0 16px;
+    min-height: 16px;
+  }
+
+  .success-msg {
+    color: var(--success);
+    font-size: 13px;
+    margin: -8px 0 16px;
+    min-height: 16px;
+  }
+
+  /* ---------- Écran principal ---------- */
+
+  .app {
+    width: 100%;
+    max-width: 980px;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
+  }
+
+  @media (max-width: 820px) {
+    .app { grid-template-columns: 1fr; }
+  }
+
+  .topbar {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .topbar h1 { font-size: 18px; margin: 0; }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .panel h2 {
+    font-size: 14px;
+    text-transform: none;
+    color: var(--muted);
+    margin: 0 0 16px;
+    font-weight: 600;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    align-items: end;
+    margin-bottom: 10px;
+  }
+
+  .field-row label { margin-bottom: 0; }
+
+  .field-row .checkbox-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 38px;
+  }
+
+  .remove-field {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--danger);
+    height: 38px;
+    padding: 0 10px;
+  }
+
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .color-input {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .color-input input[type="color"] {
+    width: 42px;
+    height: 38px;
+    padding: 2px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+  }
+
+  /* ---------- Preview d'embed façon Discord ---------- */
+
+  .discord-preview {
+    background: var(--panel-2);
+    border-radius: 8px;
+    padding: 16px;
+    position: sticky;
+    top: 24px;
+  }
+
+  .embed-box {
+    background: #2b2d31;
+    border-left: 4px solid #5865f2;
+    border-radius: 4px;
+    padding: 12px 16px;
+    max-width: 100%;
+    font-size: 14px;
+    color: #dbdee1;
+  }
+
+  .embed-box .embed-author {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #f2f3f5;
+  }
+
+  .embed-box .embed-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #f2f3f5;
+    margin-bottom: 6px;
+  }
+
+  .embed-box .embed-desc {
+    white-space: pre-wrap;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .embed-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .embed-fields .f-inline { grid-column: span 1; }
+  .embed-fields .f-full { grid-column: 1 / -1; }
+
+  .embed-fields .f-name {
+    font-weight: 700;
+    color: #f2f3f5;
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+  .embed-fields .f-value {
+    font-size: 13px;
+    white-space: pre-wrap;
+  }
+
+  .embed-box img.embed-thumb {
+    float: right;
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-left: 12px;
+  }
+
+  .embed-box img.embed-image {
+    width: 100%;
+    border-radius: 4px;
+    margin-top: 8px;
+    display: block;
+  }
+
+  .embed-footer {
+    font-size: 12px;
+    color: #949ba4;
+    margin-top: 8px;
+  }
+
+  .empty-hint {
+    color: var(--muted);
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ ÉCRAN DE CONNEXION ============ -->
+  <div class="login-card" id="login-screen">
+    <h1>Feedback vers Discord</h1>
+    <p class="subtitle">Connecte-toi pour envoyer un embed dans le salon de feedback.</p>
+
+    <label for="login-username">Identifiant</label>
+    <input type="text" id="login-username" autocomplete="username">
+
+    <label for="login-password">Mot de passe</label>
+    <input type="password" id="login-password" autocomplete="current-password">
+
+    <div class="error-msg" id="login-error"></div>
+
+    <button id="login-btn" style="width:100%">Se connecter</button>
+  </div>
+
+  <!-- ============ ÉCRAN PRINCIPAL ============ -->
+  <div class="app hidden" id="app-screen">
+    <div class="topbar">
+      <h1>Nouveau feedback</h1>
+      <button class="secondary" id="logout-btn">Se déconnecter</button>
+    </div>
+
+    <div class="panel">
+      <h2>Contenu de l'embed</h2>
+
+      <label for="f-title">Titre</label>
+      <input type="text" id="f-title" maxlength="256" placeholder="Ex: Nouveau retour utilisateur">
+
+      <label for="f-description">Description</label>
+      <textarea id="f-description" maxlength="4096" placeholder="Détaille le feedback ici..."></textarea>
+
+      <div class="row-2">
+        <div>
+          <label for="f-color">Couleur</label>
+          <div class="color-input">
+            <input type="color" id="f-color" value="#5865f2">
+            <input type="text" id="f-color-hex" value="#5865f2" style="margin-bottom:0">
+          </div>
+        </div>
+        <div>
+          <label for="f-author">Auteur (affiché en haut)</label>
+          <input type="text" id="f-author" maxlength="256" placeholder="Ex: Retour depuis le site">
+        </div>
+      </div>
+
+      <div class="row-2">
+        <div>
+          <label for="f-thumbnail">Miniature (URL image)</label>
+          <input type="url" id="f-thumbnail" placeholder="https://...">
+        </div>
+        <div>
+          <label for="f-image">Grande image (URL)</label>
+          <input type="url" id="f-image" placeholder="https://...">
+        </div>
+      </div>
+
+      <label for="f-footer">Texte du pied de page</label>
+      <input type="text" id="f-footer" maxlength="2048" placeholder="Ex: Envoyé via le site de feedback">
+
+      <div class="field-row" style="margin-top: 4px;">
+        <label style="grid-column: 1 / -1; margin-bottom: 0;">Champs additionnels</label>
+      </div>
+      <div id="fields-container"></div>
+      <button class="secondary" id="add-field-btn" type="button">+ Ajouter un champ</button>
+
+      <div class="field-row" style="margin-top:16px;">
+        <div class="checkbox-wrap">
+          <input type="checkbox" id="f-timestamp" style="width:auto;margin:0;">
+          <label for="f-timestamp" style="margin:0;">Ajouter l'horodatage</label>
+        </div>
+      </div>
+
+      <div class="error-msg" id="submit-error"></div>
+      <div class="success-msg" id="submit-success"></div>
+
+      <div class="actions">
+        <button id="submit-btn">Envoyer sur Discord</button>
+      </div>
+    </div>
+
+    <div class="panel discord-preview">
+      <h2>Aperçu</h2>
+      <div id="preview-empty" class="empty-hint">Rien à afficher pour l'instant.</div>
+      <div class="embed-box hidden" id="preview-box">
+        <div id="preview-author" class="embed-author hidden"></div>
+        <img id="preview-thumb" class="embed-thumb hidden" src="">
+        <div id="preview-title" class="embed-title hidden"></div>
+        <div id="preview-desc" class="embed-desc hidden"></div>
+        <div id="preview-fields" class="embed-fields"></div>
+        <img id="preview-image" class="embed-image hidden" src="">
+        <div id="preview-footer" class="embed-footer hidden"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // -------------------------------------------------------------------
+  // CONFIG : remplace par l'adresse de ton API sur Wispbyte
+  // -------------------------------------------------------------------
+  const API_BASE_URL = "https://feedback.wispbyte.app/api";
+
+  // -------------------------------------------------------------------
+  // Éléments
+  // -------------------------------------------------------------------
+  const loginScreen = document.getElementById('login-screen');
+  const appScreen = document.getElementById('app-screen');
+
+  const loginUsername = document.getElementById('login-username');
+  const loginPassword = document.getElementById('login-password');
+  const loginBtn = document.getElementById('login-btn');
+  const loginError = document.getElementById('login-error');
+  const logoutBtn = document.getElementById('logout-btn');
+
+  const fTitle = document.getElementById('f-title');
+  const fDescription = document.getElementById('f-description');
+  const fColor = document.getElementById('f-color');
+  const fColorHex = document.getElementById('f-color-hex');
+  const fAuthor = document.getElementById('f-author');
+  const fThumbnail = document.getElementById('f-thumbnail');
+  const fImage = document.getElementById('f-image');
+  const fFooter = document.getElementById('f-footer');
+  const fTimestamp = document.getElementById('f-timestamp');
+  const fieldsContainer = document.getElementById('fields-container');
+  const addFieldBtn = document.getElementById('add-field-btn');
+
+  const submitBtn = document.getElementById('submit-btn');
+  const submitError = document.getElementById('submit-error');
+  const submitSuccess = document.getElementById('submit-success');
+
+  let extraFields = []; // { name, value, inline }
+
+  // -------------------------------------------------------------------
+  // Session (token stocké localement pour ne pas se reconnecter à chaque fois)
+  // -------------------------------------------------------------------
+  function getToken() { return localStorage.getItem('feedback_token'); }
+  function setToken(t) { localStorage.setItem('feedback_token', t); }
+  function clearToken() { localStorage.removeItem('feedback_token'); }
+
+  function showApp() {
+    loginScreen.classList.add('hidden');
+    appScreen.classList.remove('hidden');
+  }
+  function showLogin() {
+    appScreen.classList.add('hidden');
+    loginScreen.classList.remove('hidden');
+  }
+
+  if (getToken()) showApp();
+
+  // -------------------------------------------------------------------
+  // Connexion / déconnexion
+  // -------------------------------------------------------------------
+  loginBtn.addEventListener('click', async () => {
+    loginError.textContent = '';
+    loginBtn.disabled = true;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: loginUsername.value.trim(),
+          password: loginPassword.value,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        loginError.textContent = data.error || 'Connexion impossible.';
+        return;
+      }
+
+      setToken(data.token);
+      loginPassword.value = '';
+      showApp();
+    } catch (err) {
+      loginError.textContent = "Impossible de contacter le serveur.";
+    } finally {
+      loginBtn.disabled = false;
+    }
+  });
+
+  logoutBtn.addEventListener('click', async () => {
+    const token = getToken();
+    clearToken();
+    showLogin();
+    if (token) {
+      fetch(`${API_BASE_URL}/api/logout`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+    }
+  });
+
+  // -------------------------------------------------------------------
+  // Champs dynamiques
+  // -------------------------------------------------------------------
+  function renderFieldRows() {
+    fieldsContainer.innerHTML = '';
+    extraFields.forEach((field, index) => {
+      const row = document.createElement('div');
+      row.className = 'field-row';
+      row.innerHTML = `
+        <div>
+          <label>Nom du champ</label>
+          <input type="text" data-index="${index}" data-key="name" value="${escapeAttr(field.name)}" style="margin-bottom:0">
+        </div>
+        <div>
+          <label>Valeur</label>
+          <input type="text" data-index="${index}" data-key="value" value="${escapeAttr(field.value)}" style="margin-bottom:0">
+        </div>
+        <button type="button" class="remove-field" data-index="${index}">✕</button>
+      `;
+      fieldsContainer.appendChild(row);
+    });
+
+    fieldsContainer.querySelectorAll('input').forEach((input) => {
+      input.addEventListener('input', (e) => {
+        const i = Number(e.target.dataset.index);
+        const key = e.target.dataset.key;
+        extraFields[i][key] = e.target.value;
+        updatePreview();
+      });
+    });
+
+    fieldsContainer.querySelectorAll('.remove-field').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const i = Number(e.target.dataset.index);
+        extraFields.splice(i, 1);
+        renderFieldRows();
+        updatePreview();
+      });
+    });
+  }
+
+  addFieldBtn.addEventListener('click', () => {
+    if (extraFields.length >= 25) return; // limite Discord
+    extraFields.push({ name: '', value: '', inline: true });
+    renderFieldRows();
+    updatePreview();
+  });
+
+  function escapeAttr(str) {
+    return String(str || '').replace(/"/g, '&quot;');
+  }
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
+  }
+
+  // -------------------------------------------------------------------
+  // Synchro couleur (picker <-> champ texte)
+  // -------------------------------------------------------------------
+  fColor.addEventListener('input', () => {
+    fColorHex.value = fColor.value;
+    updatePreview();
+  });
+  fColorHex.addEventListener('input', () => {
+    if (/^#[0-9a-fA-F]{6}$/.test(fColorHex.value)) {
+      fColor.value = fColorHex.value;
+    }
+    updatePreview();
+  });
+
+  [fTitle, fDescription, fAuthor, fThumbnail, fImage, fFooter, fTimestamp].forEach((el) => {
+    el.addEventListener('input', updatePreview);
+  });
+
+  // -------------------------------------------------------------------
+  // Aperçu live façon Discord
+  // -------------------------------------------------------------------
+  function updatePreview() {
+    const hasContent = fTitle.value || fDescription.value || fAuthor.value || extraFields.some(f => f.name || f.value);
+
+    document.getElementById('preview-empty').classList.toggle('hidden', hasContent);
+    document.getElementById('preview-box').classList.toggle('hidden', !hasContent);
+
+    if (!hasContent) return;
+
+    document.getElementById('preview-box').style.borderLeftColor = fColorHex.value;
+
+    const authorEl = document.getElementById('preview-author');
+    authorEl.textContent = fAuthor.value;
+    authorEl.classList.toggle('hidden', !fAuthor.value);
+
+    const titleEl = document.getElementById('preview-title');
+    titleEl.textContent = fTitle.value;
+    titleEl.classList.toggle('hidden', !fTitle.value);
+
+    const descEl = document.getElementById('preview-desc');
+    descEl.textContent = fDescription.value;
+    descEl.classList.toggle('hidden', !fDescription.value);
+
+    const thumbEl = document.getElementById('preview-thumb');
+    thumbEl.src = fThumbnail.value;
+    thumbEl.classList.toggle('hidden', !fThumbnail.value);
+
+    const imageEl = document.getElementById('preview-image');
+    imageEl.src = fImage.value;
+    imageEl.classList.toggle('hidden', !fImage.value);
+
+    const footerEl = document.getElementById('preview-footer');
+    let footerText = fFooter.value;
+    if (fTimestamp.checked) {
+      footerText = footerText ? `${footerText} • ${new Date().toLocaleString()}` : new Date().toLocaleString();
+    }
+    footerEl.textContent = footerText;
+    footerEl.classList.toggle('hidden', !footerText);
+
+    const fieldsEl = document.getElementById('preview-fields');
+    fieldsEl.innerHTML = '';
+    extraFields.forEach((f) => {
+      if (!f.name && !f.value) return;
+      const div = document.createElement('div');
+      div.className = f.inline ? 'f-inline' : 'f-full';
+      div.innerHTML = `<div class="f-name">${escapeHtml(f.name)}</div><div class="f-value">${escapeHtml(f.value)}</div>`;
+      fieldsEl.appendChild(div);
+    });
+  }
+
+  // -------------------------------------------------------------------
+  // Envoi du feedback
+  // -------------------------------------------------------------------
+  submitBtn.addEventListener('click', async () => {
+    submitError.textContent = '';
+    submitSuccess.textContent = '';
+
+    if (!fTitle.value && !fDescription.value) {
+      submitError.textContent = 'Ajoute au moins un titre ou une description.';
+      return;
+    }
+
+    submitBtn.disabled = true;
+
+    const payload = {
+      title: fTitle.value || undefined,
+      description: fDescription.value || undefined,
+      color: fColorHex.value,
+      authorName: fAuthor.value || undefined,
+      footerText: fFooter.value || undefined,
+      thumbnailUrl: fThumbnail.value || undefined,
+      imageUrl: fImage.value || undefined,
+      timestamp: fTimestamp.checked,
+      fields: extraFields.filter((f) => f.name || f.value),
+    };
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (res.status === 401) {
+        clearToken();
+        showLogin();
+        loginError.textContent = 'Session expirée, reconnecte-toi.';
+        return;
+      }
+
+      if (!res.ok) {
+        submitError.textContent = data.error || "Erreur lors de l'envoi.";
+        return;
+      }
+
+      submitSuccess.textContent = 'Feedback envoyé sur Discord ✔';
+
+      // Reset du formulaire
+      fTitle.value = '';
+      fDescription.value = '';
+      fAuthor.value = '';
+      fThumbnail.value = '';
+      fImage.value = '';
+      fFooter.value = '';
+      fTimestamp.checked = false;
+      extraFields = [];
+      renderFieldRows();
+      updatePreview();
+    } catch (err) {
+      submitError.textContent = "Impossible de contacter le serveur.";
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  updatePreview();
+</script>
+</body>
+</html>
