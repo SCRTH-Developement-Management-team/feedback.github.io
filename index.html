@@ -352,22 +352,22 @@
       <h2>Embed content</h2>
 
       <label for="f-title">Title</label>
-      <input type="text" id="f-title" maxlength="256" placeholder="e.g. New performance review">
+      <input type="text" id="f-title" maxlength="256" placeholder="Useless, use the description instead.">
 
       <label for="f-description">Description</label>
-      <textarea id="f-description" maxlength="4096" placeholder="Write the feedback here..."></textarea>
+      <textarea id="f-description" maxlength="4096" placeholder="Write the feedback here... Please follow the feedback format."></textarea>
 
       <div class="row-2">
         <div>
-          <label for="f-color">Color</label>
+          <label for="f-color">Color. Failed : ff0000 | Passed : 00ff34 </label>
           <div class="color-input">
-            <input type="color" id="f-color" value="#5865f2">
-            <input type="text" id="f-color-hex" value="#5865f2" style="margin-bottom:0">
+            <input type="color" id="f-color" value="#e91e63">
+            <input type="text" id="f-color-hex" value="#e91e63" style="margin-bottom:0">
           </div>
         </div>
         <div>
           <label for="f-author">Author (shown at the top)</label>
-          <input type="text" id="f-author" maxlength="256" placeholder="e.g. SCRTH Staff Team">
+          <input type="text" id="f-author" maxlength="256" placeholder="Useless, use fields instead.">
         </div>
       </div>
 
@@ -388,7 +388,7 @@
       </div>
 
       <label for="f-footer">Footer text</label>
-      <input type="text" id="f-footer" maxlength="2048" placeholder="e.g. Sent via the feedback portal">
+      <input type="text" id="f-footer" maxlength="2048" placeholder="e.g. 1/x (set more if there is multiple embeds)">
 
       <div class="field-row" style="margin-top: 4px;">
         <label style="grid-column: 1 / -1; margin-bottom: 0;">Additional fields</label>
@@ -399,7 +399,7 @@
       <div class="field-row" style="margin-top:16px;">
         <div class="checkbox-wrap">
           <input type="checkbox" id="f-timestamp" style="width:auto;margin:0;">
-          <label for="f-timestamp" style="margin:0;">Add timestamp</label>
+          <label for="f-timestamp" style="margin:0;">Timestamp (Deprecated)</label>
         </div>
       </div>
 
