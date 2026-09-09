@@ -12,7 +12,7 @@
     --border: #262a33;
     --text: #e7e9ee;
     --muted: #8b8fa3;
-    --accent: #5865f2; /* "Discord blurple", consistent with the subject */
+    --accent: #5865f2;
     --accent-hover: #4752c4;
     --danger: #ed4245;
     --success: #3ba55d;
@@ -34,7 +34,7 @@
 
   .hidden { display: none !important; }
 
-  /* ---------- Login screen ---------- */
+
 
   .login-card {
     width: 100%;
@@ -126,7 +126,7 @@
     min-height: 16px;
   }
 
-  /* ---------- Main screen ---------- */
+
 
   .app {
     width: 100%;
@@ -206,7 +206,7 @@
     background: var(--panel-2);
   }
 
-  /* ---------- Discord-style embed preview ---------- */
+
 
   .discord-preview {
     background: var(--panel-2);
@@ -315,7 +315,7 @@
 </head>
 <body>
 
-  <!-- ============ LOGIN SCREEN ============ -->
+
   <div class="login-card" id="login-screen">
     <h1>Feedback to Discord</h1>
     <p class="subtitle">Log in to save a feedback embed for a user.</p>
@@ -331,7 +331,7 @@
     <button id="login-btn" style="width:100%">Log in</button>
   </div>
 
-  <!-- ============ MAIN SCREEN ============ -->
+
   <div class="app hidden" id="app-screen">
     <div class="topbar">
       <h1>New feedback</h1>
@@ -428,14 +428,10 @@
   </div>
 
 <script>
-  // -------------------------------------------------------------------
-  // CONFIG: replace with your API address on Wispbyte
-  // -------------------------------------------------------------------
+
   const API_BASE_URL = "https://feedback.wispbyte.app";
 
-  // -------------------------------------------------------------------
-  // Elements
-  // -------------------------------------------------------------------
+
   const loginScreen = document.getElementById('login-screen');
   const appScreen = document.getElementById('app-screen');
 
@@ -462,11 +458,9 @@
   const submitError = document.getElementById('submit-error');
   const submitSuccess = document.getElementById('submit-success');
 
-  let extraFields = []; // { name, value, inline }
+  let extraFields = [];
 
-  // -------------------------------------------------------------------
-  // Session (token kept locally so you don't have to log in every time)
-  // -------------------------------------------------------------------
+
   function getToken() { return localStorage.getItem('feedback_token'); }
   function setToken(t) { localStorage.setItem('feedback_token', t); }
   function clearToken() { localStorage.removeItem('feedback_token'); }
@@ -482,9 +476,7 @@
 
   if (getToken()) showApp();
 
-  // -------------------------------------------------------------------
-  // Login / logout
-  // -------------------------------------------------------------------
+
   loginBtn.addEventListener('click', async () => {
     loginError.textContent = '';
     loginBtn.disabled = true;
@@ -528,9 +520,7 @@
     }
   });
 
-  // -------------------------------------------------------------------
-  // Dynamic fields
-  // -------------------------------------------------------------------
+
   function renderFieldRows() {
     fieldsContainer.innerHTML = '';
     extraFields.forEach((field, index) => {
@@ -585,9 +575,7 @@
     return div.innerHTML;
   }
 
-  // -------------------------------------------------------------------
-  // Color sync (picker <-> text field)
-  // -------------------------------------------------------------------
+
   fColor.addEventListener('input', () => {
     fColorHex.value = fColor.value;
     updatePreview();
@@ -603,9 +591,7 @@
     el.addEventListener('input', updatePreview);
   });
 
-  // -------------------------------------------------------------------
-  // Live Discord-style preview
-  // -------------------------------------------------------------------
+
   function updatePreview() {
     const targetBadge = document.getElementById('preview-target');
     targetBadge.textContent = fTargetUser.value
@@ -660,9 +646,7 @@
     });
   }
 
-  // -------------------------------------------------------------------
-  // Submit feedback
-  // -------------------------------------------------------------------
+
   submitBtn.addEventListener('click', async () => {
     submitError.textContent = '';
     submitSuccess.textContent = '';
@@ -729,7 +713,7 @@
 
       submitSuccess.textContent = 'Feedback saved and ready for the user ✔';
 
-      // Reset the form (keep the target user ID in case you're adding several)
+
       fTitle.value = '';
       fDescription.value = '';
       fAuthor.value = '';
