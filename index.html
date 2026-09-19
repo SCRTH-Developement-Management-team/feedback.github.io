@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Feedback → Discord</title>
+<title>Feedback Portal</title>
 <style>
   :root {
     --bg: #0e0f13;
@@ -13,7 +13,8 @@
     --text: #e7e9ee;
     --muted: #8b8fa3;
     --accent: #e91e63;
-    --accent-hover: #e91e63;
+    --accent-hover: #c2185b;
+    --accent-soft: rgba(233, 30, 99, 0.15);
     --danger: #ed4245;
     --success: #3ba55d;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -26,42 +27,52 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     padding: 24px;
   }
 
   .hidden { display: none !important; }
 
+  /* ---------- Shared bits ---------- */
 
-
-  .login-card {
-    width: 100%;
-    max-width: 360px;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 32px;
+  .center-screen {
+    min-height: calc(100vh - 48px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  .login-card h1 {
-    font-size: 20px;
-    margin: 0 0 4px;
+  .org-logo {
+    display: block;
+    border-radius: 14px;
+    object-fit: cover;
   }
 
-  .login-card p.subtitle {
-    color: var(--muted);
-    font-size: 14px;
-    margin: 0 0 24px;
+  .org-logo-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+    color: white;
+    font-weight: 700;
+    letter-spacing: 0.5px;
   }
 
   label {
-    display: block;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
     font-size: 13px;
     color: var(--muted);
     margin-bottom: 6px;
   }
+
+  .char-count {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .char-count.near-limit { color: var(--accent); }
 
   input[type="text"],
   input[type="password"],
@@ -112,6 +123,14 @@
   }
   button.secondary:hover { background: var(--panel-2); color: var(--text); }
 
+  button.danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+  button.danger:hover { background: rgba(237, 66, 69, 0.12); }
+
+  button.icon-btn {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
   .error-msg {
     color: var(--danger);
     font-size: 13px;
@@ -126,11 +145,91 @@
     min-height: 16px;
   }
 
+  .login-card {
+    width: 100%;
+    max-width: 360px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+  }
+
+  .login-card .org-logo,
+  .login-card .org-logo-placeholder {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    font-size: 22px;
+  }
+
+  .login-card h1 {
+    font-size: 20px;
+    margin: 0 0 4px;
+  }
+
+  .login-card p.subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0 0 24px;
+  }
+
+  .login-card label { justify-content: flex-start; }
+
+  /* ---------- Shell (topbar + tabs) ---------- */
+
+  .shell { max-width: 1080px; margin: 0 auto; }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .topbar-brand .org-logo,
+  .topbar-brand .org-logo-placeholder {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .topbar-brand h1 { font-size: 17px; margin: 0; }
+  .topbar-brand .org-name { font-size: 12px; color: var(--muted); }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px;
+  }
+
+  .tabs button {
+    background: transparent;
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-size: 13px;
+  }
+  .tabs button:hover { background: var(--panel-2); color: var(--text); }
+  .tabs button.active { background: var(--accent); color: white; }
+  .tabs button.active:hover { background: var(--accent); }
+
+  .topbar-actions { display: flex; align-items: center; gap: 8px; }
 
 
   .app {
     width: 100%;
-    max-width: 980px;
     display: grid;
     grid-template-columns: 1fr 380px;
     gap: 20px;
@@ -139,16 +238,6 @@
   @media (max-width: 820px) {
     .app { grid-template-columns: 1fr; }
   }
-
-  .topbar {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 4px;
-  }
-
-  .topbar h1 { font-size: 18px; margin: 0; }
 
   .panel {
     background: var(--panel);
@@ -159,7 +248,6 @@
 
   .panel h2 {
     font-size: 14px;
-    text-transform: none;
     color: var(--muted);
     margin: 0 0 16px;
     font-weight: 600;
@@ -170,10 +258,10 @@
     grid-template-columns: 1fr 1fr auto;
     gap: 8px;
     align-items: end;
-    margin-bottom: 10px;
+    margin-bottom: 4px;
   }
 
-  .field-row label { margin-bottom: 0; }
+  .field-row label { margin-bottom: 6px; }
 
   .field-row .checkbox-wrap {
     display: flex;
@@ -206,6 +294,19 @@
     background: var(--panel-2);
   }
 
+  .edit-banner {
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
 
 
   .discord-preview {
@@ -225,6 +326,8 @@
     border-radius: 999px;
     padding: 4px 10px;
     margin-bottom: 12px;
+    max-width: 100%;
+    overflow-wrap: break-word;
   }
 
   .embed-box {
@@ -235,6 +338,8 @@
     max-width: 100%;
     font-size: 14px;
     color: #dbdee1;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .embed-box .embed-author {
@@ -255,6 +360,8 @@
     white-space: pre-wrap;
     line-height: 1.4;
     margin-bottom: 8px;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .embed-fields {
@@ -263,18 +370,22 @@
     gap: 8px;
     margin-bottom: 8px;
   }
-  .embed-fields .f-inline { grid-column: span 1; }
-  .embed-fields .f-full { grid-column: 1 / -1; }
+  .embed-fields .f-inline { grid-column: span 1; min-width: 0; }
+  .embed-fields .f-full { grid-column: 1 / -1; min-width: 0; }
 
   .embed-fields .f-name {
     font-weight: 700;
     color: #f2f3f5;
     font-size: 13px;
     margin-bottom: 2px;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
   .embed-fields .f-value {
     font-size: 13px;
     white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .embed-box img.embed-thumb {
@@ -297,6 +408,8 @@
     font-size: 12px;
     color: #949ba4;
     margin-top: 8px;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .empty-hint {
@@ -311,118 +424,246 @@
     gap: 8px;
     margin-top: 20px;
   }
+
+
+  .manage-view {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  @media (max-width: 820px) {
+    .manage-view { grid-template-columns: 1fr; }
+  }
+
+  .users-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .user-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .user-row:hover { border-color: var(--accent); }
+  .user-row.active { border-color: var(--accent); background: var(--accent-soft); }
+  .user-row .uid { font-family: monospace; color: var(--text); overflow-wrap: anywhere; }
+  .user-row .count {
+    flex-shrink: 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 8px;
+  }
+
+  .feedback-card {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+
+  .feedback-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .feedback-card .fc-index {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .feedback-card .fc-title {
+    font-weight: 700;
+    font-size: 14px;
+    overflow-wrap: break-word;
+  }
+
+  .feedback-card .fc-desc {
+    font-size: 13px;
+    color: var(--muted);
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    max-height: 60px;
+    overflow: hidden;
+  }
+
+  .feedback-card-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .manage-empty {
+    color: var(--muted);
+    font-size: 13px;
+    font-style: italic;
+    padding: 20px 0;
+    text-align: center;
+  }
 </style>
 </head>
 <body>
 
+  <!-- ============ LOGIN SCREEN ============ -->
+  <div class="center-screen" id="login-screen-wrap">
+    <div class="login-card" id="login-screen">
+      <div id="login-logo-slot"></div>
+      <h1>Feedback Portal</h1>
+      <p class="subtitle" id="login-org-subtitle">Log in to save a feedback embed for a user.</p>
 
-  <div class="login-card" id="login-screen">
-    <h1>Feedback to Discord</h1>
-    <p class="subtitle">Log in to save a feedback embed for a user.</p>
+      <label for="login-username">Username</label>
+      <input type="text" id="login-username" autocomplete="username">
 
-    <label for="login-username">Username</label>
-    <input type="text" id="login-username" autocomplete="username">
+      <label for="login-password">Password</label>
+      <input type="password" id="login-password" autocomplete="current-password">
 
-    <label for="login-password">Password</label>
-    <input type="password" id="login-password" autocomplete="current-password">
+      <div class="error-msg" id="login-error"></div>
 
-    <div class="error-msg" id="login-error"></div>
-
-    <button id="login-btn" style="width:100%">Log in</button>
+      <button id="login-btn" style="width:100%">Log in</button>
+    </div>
   </div>
 
 
-  <div class="app hidden" id="app-screen">
+  <div class="shell hidden" id="app-screen">
     <div class="topbar">
-      <h1>New feedback</h1>
-      <button class="secondary" id="logout-btn">Log out</button>
-    </div>
-
-    <div class="panel">
-      <h2>Recipient</h2>
-
-      <label for="f-target-user">Discord User ID</label>
-      <input type="text" id="f-target-user" placeholder="e.g. 123456789012345678" inputmode="numeric">
-      <div class="hint">
-        This is the numeric Discord ID of the user this feedback is for.
-        The user will be able to see it with the <code>/feedback</code> command.
-        Enable Developer Mode in Discord (Settings → Advanced) to copy a user's ID.
+      <div class="topbar-brand">
+        <div id="topbar-logo-slot"></div>
+        <div>
+          <h1 id="topbar-title">Feedback Portal</h1>
+          <div class="org-name" id="topbar-org-name"></div>
+        </div>
       </div>
 
-      <h2>Embed content</h2>
+      <div class="tabs">
+        <button id="tab-submit-btn" class="active">Submit feedback</button>
+        <button id="tab-manage-btn">Manage feedbacks</button>
+      </div>
 
-      <label for="f-title">Title</label>
-      <input type="text" id="f-title" maxlength="256" placeholder="Useless, use the description instead.">
+      <div class="topbar-actions">
+        <button class="secondary" id="logout-btn">Log out</button>
+      </div>
+    </div>
 
-      <label for="f-description">Description</label>
-      <textarea id="f-description" maxlength="4096" placeholder="Write the feedback here... Please follow the feedback format."></textarea>
+    <div class="app" id="view-submit">
+      <div class="panel">
+        <div class="edit-banner hidden" id="edit-banner">
+          <span id="edit-banner-text">Editing an existing feedback</span>
+          <button class="secondary icon-btn" id="cancel-edit-btn" type="button">Cancel edit</button>
+        </div>
 
-      <div class="row-2">
-        <div>
-          <label for="f-color">Color. Failed : ff0000 | Passed : 00ff34 </label>
-          <div class="color-input">
-            <input type="color" id="f-color" value="#e91e63">
-            <input type="text" id="f-color-hex" value="#e91e63" style="margin-bottom:0">
+        <h2>Recipient</h2>
+
+        <label for="f-target-user">Discord User ID</label>
+        <input type="text" id="f-target-user" placeholder="e.g. 123456789012345678" inputmode="numeric">
+        <div class="hint">
+          This is the numeric Discord ID of the user this feedback is for.
+          The user will be able to see it with the <code>/feedback</code> command.
+          Enable Developer Mode in Discord (Settings → Advanced) to copy a user's ID.
+        </div>
+
+        <h2>Embed content</h2>
+
+        <label for="f-title">Title <span class="char-count" id="count-title">0/256</span></label>
+        <input type="text" id="f-title" maxlength="256" placeholder="e.g. New performance review">
+
+        <label for="f-description">Description <span class="char-count" id="count-description">0/4096</span></label>
+        <textarea id="f-description" maxlength="4096" placeholder="Write the feedback here..."></textarea>
+
+        <div class="row-2">
+          <div>
+            <label for="f-color">Color</label>
+            <div class="color-input">
+              <input type="color" id="f-color" value="#e91e63">
+              <input type="text" id="f-color-hex" value="#e91e63" style="margin-bottom:0">
+            </div>
+          </div>
+          <div>
+            <label for="f-author">Author (shown at the top) <span class="char-count" id="count-author">0/256</span></label>
+            <input type="text" id="f-author" maxlength="256" placeholder="e.g. SCRTH Staff Team">
           </div>
         </div>
-        <div>
-          <label for="f-author">Author (shown at the top)</label>
-          <input type="text" id="f-author" maxlength="256" placeholder="Useless, use fields instead.">
+
+        <div class="row-2">
+          <div>
+            <label for="f-thumbnail">Thumbnail (image URL)</label>
+            <input type="url" id="f-thumbnail" placeholder="https://...">
+          </div>
+          <div>
+            <label for="f-image">Large image (URL)</label>
+            <input type="url" id="f-image" placeholder="https://...">
+          </div>
+        </div>
+        <div class="hint" style="margin-top:-10px;">
+          Paste a direct link to an image (starts with <code>http://</code> or <code>https://</code>) —
+          not a pasted screenshot or a Discord attachment upload button. If you don't have a link yet,
+          upload the image to a Discord channel first and copy its link, or use a host like Imgur.
+        </div>
+
+        <label for="f-footer">Footer text <span class="char-count" id="count-footer">0/2048</span></label>
+        <input type="text" id="f-footer" maxlength="2048" placeholder="e.g. Sent via the feedback portal">
+
+        <div class="field-row" style="margin-top: 4px;">
+          <label style="grid-column: 1 / -1; margin-bottom: 0;">Additional fields</label>
+        </div>
+        <div id="fields-container"></div>
+        <button class="secondary" id="add-field-btn" type="button">+ Add a field</button>
+
+        <div class="field-row" style="margin-top:16px;">
+          <div class="checkbox-wrap">
+            <input type="checkbox" id="f-timestamp" style="width:auto;margin:0;">
+            <label for="f-timestamp" style="margin:0;">Add timestamp</label>
+          </div>
+        </div>
+
+        <div class="error-msg" id="submit-error"></div>
+        <div class="success-msg" id="submit-success"></div>
+
+        <div class="actions">
+          <button id="submit-btn">Save feedback</button>
         </div>
       </div>
 
-      <div class="row-2">
-        <div>
-          <label for="f-thumbnail">Thumbnail (image URL)</label>
-          <input type="url" id="f-thumbnail" placeholder="https://...">
+      <div class="panel discord-preview">
+        <h2>Preview</h2>
+        <div class="target-badge" id="preview-target">No recipient set</div>
+        <div id="preview-empty" class="empty-hint">Nothing to show yet.</div>
+        <div class="embed-box hidden" id="preview-box">
+          <div id="preview-author" class="embed-author hidden"></div>
+          <img id="preview-thumb" class="embed-thumb hidden" src="">
+          <div id="preview-title" class="embed-title hidden"></div>
+          <div id="preview-desc" class="embed-desc hidden"></div>
+          <div id="preview-fields" class="embed-fields"></div>
+          <img id="preview-image" class="embed-image hidden" src="">
+          <div id="preview-footer" class="embed-footer hidden"></div>
         </div>
-        <div>
-          <label for="f-image">Large image (URL)</label>
-          <input type="url" id="f-image" placeholder="https://...">
-        </div>
-      </div>
-      <div class="hint" style="margin-top:-10px;">
-        Paste a direct link to an image (starts with <code>http://</code> or <code>https://</code>) —
-        not a pasted screenshot or a Discord attachment upload button. If you don't have a link yet,
-        upload the image to a Discord channel first and copy its link, or use a host like Imgur.
-      </div>
-
-      <label for="f-footer">Footer text</label>
-      <input type="text" id="f-footer" maxlength="2048" placeholder="e.g. 1/x (set more if there is multiple embeds)">
-
-      <div class="field-row" style="margin-top: 4px;">
-        <label style="grid-column: 1 / -1; margin-bottom: 0;">Additional fields</label>
-      </div>
-      <div id="fields-container"></div>
-      <button class="secondary" id="add-field-btn" type="button">+ Add a field</button>
-
-      <div class="field-row" style="margin-top:16px;">
-        <div class="checkbox-wrap">
-          <input type="checkbox" id="f-timestamp" style="width:auto;margin:0;">
-          <label for="f-timestamp" style="margin:0;">Timestamp (Deprecated)</label>
-        </div>
-      </div>
-
-      <div class="error-msg" id="submit-error"></div>
-      <div class="success-msg" id="submit-success"></div>
-
-      <div class="actions">
-        <button id="submit-btn">Save feedback</button>
       </div>
     </div>
 
-    <div class="panel discord-preview">
-      <h2>Preview</h2>
-      <div class="target-badge" id="preview-target">No recipient set</div>
-      <div id="preview-empty" class="empty-hint">Nothing to show yet.</div>
-      <div class="embed-box hidden" id="preview-box">
-        <div id="preview-author" class="embed-author hidden"></div>
-        <img id="preview-thumb" class="embed-thumb hidden" src="">
-        <div id="preview-title" class="embed-title hidden"></div>
-        <div id="preview-desc" class="embed-desc hidden"></div>
-        <div id="preview-fields" class="embed-fields"></div>
-        <img id="preview-image" class="embed-image hidden" src="">
-        <div id="preview-footer" class="embed-footer hidden"></div>
+    <div class="manage-view hidden" id="view-manage">
+      <div class="panel">
+        <h2>Users with feedback</h2>
+        <div id="users-list" class="users-list">
+          <div class="manage-empty">Loading...</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 id="feedbacks-title">Select a user on the left</h2>
+        <div id="feedbacks-list"></div>
       </div>
     </div>
   </div>
@@ -432,7 +673,41 @@
   const API_BASE_URL = "https://feedback.wispbyte.app";
 
 
-  const loginScreen = document.getElementById('login-screen');
+  const ORG_NAME = "SCRTH";
+  const ORG_LOGO_URL = "https://images-ext-1.discordapp.net/external/XIGW6-AkXgL-zKJ_PazqP3YEymlPN2k58WCnh7IZr3c/https/message.style/cdn/images/fde4f74bac334b68717dabf56c3a1e40126b37e0a6cb617ad4eac33b327ba5ea.png?format=webp&quality=lossless";
+
+
+  function initials(name) {
+    return name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0].toUpperCase())
+      .join('');
+  }
+
+  function renderLogo(size) {
+    if (ORG_LOGO_URL) {
+      return `<img class="org-logo" src="${ORG_LOGO_URL}" alt="${ORG_NAME} logo" style="width:${size}px;height:${size}px;">`;
+    }
+    return `<div class="org-logo-placeholder" style="width:${size}px;height:${size}px;">${initials(ORG_NAME)}</div>`;
+  }
+
+  document.getElementById('login-logo-slot').innerHTML = renderLogo(120);
+  document.getElementById('topbar-logo-slot').innerHTML = renderLogo(80);
+  document.getElementById('login-org-subtitle').textContent = `Log in to save a feedback embed for a ${ORG_NAME} member. (Access is only authorised for MG+)`;
+  document.getElementById('topbar-title').textContent = `${ORG_NAME} Feedback Portal`;
+  document.getElementById('topbar-org-name').textContent = ORG_NAME;
+  document.title = `${ORG_NAME} — Feedback Portal`;
+  if (ORG_LOGO_URL) {
+    const favicon = document.createElement('link');
+    favicon.rel = 'icon';
+    favicon.href = ORG_LOGO_URL;
+    document.head.appendChild(favicon);
+  }
+
+
+  const loginScreenWrap = document.getElementById('login-screen-wrap');
   const appScreen = document.getElementById('app-screen');
 
   const loginUsername = document.getElementById('login-username');
@@ -440,6 +715,11 @@
   const loginBtn = document.getElementById('login-btn');
   const loginError = document.getElementById('login-error');
   const logoutBtn = document.getElementById('logout-btn');
+
+  const tabSubmitBtn = document.getElementById('tab-submit-btn');
+  const tabManageBtn = document.getElementById('tab-manage-btn');
+  const viewSubmit = document.getElementById('view-submit');
+  const viewManage = document.getElementById('view-manage');
 
   const fTargetUser = document.getElementById('f-target-user');
   const fTitle = document.getElementById('f-title');
@@ -458,20 +738,33 @@
   const submitError = document.getElementById('submit-error');
   const submitSuccess = document.getElementById('submit-success');
 
-  let extraFields = [];
+  const editBanner = document.getElementById('edit-banner');
+  const editBannerText = document.getElementById('edit-banner-text');
+  const cancelEditBtn = document.getElementById('cancel-edit-btn');
+
+  const usersList = document.getElementById('users-list');
+  const feedbacksTitle = document.getElementById('feedbacks-title');
+  const feedbacksList = document.getElementById('feedbacks-list');
+
+  let extraFields = []; 
+  let editState = null; 
+  let manageState = { selectedUserId: null, feedbacks: [] };
 
 
   function getToken() { return localStorage.getItem('feedback_token'); }
   function setToken(t) { localStorage.setItem('feedback_token', t); }
   function clearToken() { localStorage.removeItem('feedback_token'); }
+  function authHeaders() {
+    return { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` };
+  }
 
   function showApp() {
-    loginScreen.classList.add('hidden');
+    loginScreenWrap.classList.add('hidden');
     appScreen.classList.remove('hidden');
   }
   function showLogin() {
     appScreen.classList.add('hidden');
-    loginScreen.classList.remove('hidden');
+    loginScreenWrap.classList.remove('hidden');
   }
 
   if (getToken()) showApp();
@@ -521,6 +814,33 @@
   });
 
 
+  function switchTab(tab) {
+    const isSubmit = tab === 'submit';
+    viewSubmit.classList.toggle('hidden', !isSubmit);
+    viewManage.classList.toggle('hidden', isSubmit);
+    tabSubmitBtn.classList.toggle('active', isSubmit);
+    tabManageBtn.classList.toggle('active', !isSubmit);
+    if (!isSubmit) loadUsersList();
+  }
+  tabSubmitBtn.addEventListener('click', () => switchTab('submit'));
+  tabManageBtn.addEventListener('click', () => switchTab('manage'));
+
+
+  function setCharCount(id, currentLength, max) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = `${currentLength}/${max}`;
+    el.classList.toggle('near-limit', currentLength >= max * 0.9);
+  }
+
+  function updateCharCounts() {
+    setCharCount('count-title', fTitle.value.length, 256);
+    setCharCount('count-description', fDescription.value.length, 4096);
+    setCharCount('count-author', fAuthor.value.length, 256);
+    setCharCount('count-footer', fFooter.value.length, 2048);
+  }
+
+
   function renderFieldRows() {
     fieldsContainer.innerHTML = '';
     extraFields.forEach((field, index) => {
@@ -528,12 +848,12 @@
       row.className = 'field-row';
       row.innerHTML = `
         <div>
-          <label>Field name</label>
-          <input type="text" data-index="${index}" data-key="name" value="${escapeAttr(field.name)}" style="margin-bottom:0">
+          <label>Field name <span class="char-count" id="count-field-name-${index}">${field.name.length}/256</span></label>
+          <input type="text" maxlength="256" data-index="${index}" data-key="name" value="${escapeAttr(field.name)}" style="margin-bottom:0">
         </div>
         <div>
-          <label>Value</label>
-          <input type="text" data-index="${index}" data-key="value" value="${escapeAttr(field.value)}" style="margin-bottom:0">
+          <label>Value <span class="char-count" id="count-field-value-${index}">${field.value.length}/1024</span></label>
+          <input type="text" maxlength="1024" data-index="${index}" data-key="value" value="${escapeAttr(field.value)}" style="margin-bottom:0">
         </div>
         <button type="button" class="remove-field" data-index="${index}">✕</button>
       `;
@@ -545,6 +865,7 @@
         const i = Number(e.target.dataset.index);
         const key = e.target.dataset.key;
         extraFields[i][key] = e.target.value;
+        setCharCount(`count-field-${key}-${i}`, e.target.value.length, key === 'name' ? 256 : 1024);
         updatePreview();
       });
     });
@@ -593,6 +914,8 @@
 
 
   function updatePreview() {
+    updateCharCounts();
+
     const targetBadge = document.getElementById('preview-target');
     targetBadge.textContent = fTargetUser.value
       ? `For user ID: ${fTargetUser.value}`
@@ -646,6 +969,35 @@
     });
   }
 
+  function resetForm(keepTargetUser) {
+    if (!keepTargetUser) fTargetUser.value = '';
+    fTitle.value = '';
+    fDescription.value = '';
+    fColorHex.value = '#e91e63';
+    fColor.value = '#e91e63';
+    fAuthor.value = '';
+    fThumbnail.value = '';
+    fImage.value = '';
+    fFooter.value = '';
+    fTimestamp.checked = false;
+    extraFields = [];
+    renderFieldRows();
+    updatePreview();
+  }
+
+  function setEditModeUI(isEditing, label) {
+    editBanner.classList.toggle('hidden', !isEditing);
+    if (label) editBannerText.textContent = label;
+    submitBtn.textContent = isEditing ? 'Save changes' : 'Save feedback';
+  }
+
+  cancelEditBtn.addEventListener('click', () => {
+    editState = null;
+    setEditModeUI(false);
+    resetForm(false);
+    submitError.textContent = '';
+    submitSuccess.textContent = '';
+  });
 
   submitBtn.addEventListener('click', async () => {
     submitError.textContent = '';
@@ -687,13 +1039,16 @@
       fields: extraFields.filter((f) => f.name || f.value),
     };
 
+    const isEditing = Boolean(editState);
+    const url = isEditing
+      ? `${API_BASE_URL}/api/feedback/${editState.userId}/${editState.index}`
+      : `${API_BASE_URL}/api/feedback`;
+    const method = isEditing ? 'PUT' : 'POST';
+
     try {
-      const res = await fetch(`${API_BASE_URL}/api/feedback`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`,
-        },
+      const res = await fetch(url, {
+        method,
+        headers: authHeaders(),
         body: JSON.stringify(payload),
       });
 
@@ -711,19 +1066,18 @@
         return;
       }
 
-      submitSuccess.textContent = 'Feedback saved and ready for the user ✔';
+      submitSuccess.textContent = isEditing ? 'Feedback updated ✔' : 'Feedback saved and ready for the user ✔';
 
-
-      fTitle.value = '';
-      fDescription.value = '';
-      fAuthor.value = '';
-      fThumbnail.value = '';
-      fImage.value = '';
-      fFooter.value = '';
-      fTimestamp.checked = false;
-      extraFields = [];
-      renderFieldRows();
-      updatePreview();
+      if (isEditing) {
+        const finishedUserId = editState.userId;
+        editState = null;
+        setEditModeUI(false);
+        resetForm(false);
+        switchTab('manage');
+        loadUserFeedbacks(finishedUserId);
+      } else {
+        resetForm(true); 
+      }
     } catch (err) {
       submitError.textContent = "Could not reach the server.";
     } finally {
@@ -731,6 +1085,180 @@
     }
   });
 
+  // -------------------------------------------------------------------
+  // LA LISTE DES USERS DE SES MORTS
+  // -------------------------------------------------------------------
+  async function loadUsersList() {
+    usersList.innerHTML = '<div class="manage-empty">Loading...</div>';
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/feedback/users`, { headers: authHeaders() });
+      const data = await res.json();
+
+      if (res.status === 401) {
+        clearToken();
+        showLogin();
+        return;
+      }
+
+      if (!res.ok || !Array.isArray(data.users) || data.users.length === 0) {
+        usersList.innerHTML = '<div class="manage-empty">No feedback stored yet.</div>';
+        return;
+      }
+
+      usersList.innerHTML = '';
+      data.users.forEach(({ userId, count }) => {
+        const row = document.createElement('div');
+        row.className = 'user-row' + (manageState.selectedUserId === userId ? ' active' : '');
+        row.innerHTML = `<span class="uid">${escapeHtml(userId)}</span><span class="count">${count}</span>`;
+        row.addEventListener('click', () => loadUserFeedbacks(userId));
+        usersList.appendChild(row);
+      });
+    } catch (err) {
+      usersList.innerHTML = '<div class="manage-empty">Could not reach the server.</div>';
+    }
+  }
+
+  // -------------------------------------------------------------------
+  // LE MÉNAGE DE LA VISUALISATION DU SAINT MERDIER
+  // -------------------------------------------------------------------
+  async function loadUserFeedbacks(userId) {
+    manageState.selectedUserId = userId;
+    feedbacksTitle.textContent = `Feedbacks for ${userId}`;
+    feedbacksList.innerHTML = '<div class="manage-empty">Loading...</div>';
+
+    // Re-render the user list so the active row is highlighted
+    loadUsersList();
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/feedback/${userId}`, { headers: authHeaders() });
+      const data = await res.json();
+
+      if (res.status === 401) {
+        clearToken();
+        showLogin();
+        return;
+      }
+
+      manageState.feedbacks = Array.isArray(data.feedbacks) ? data.feedbacks : [];
+      renderFeedbacksList();
+    } catch (err) {
+      feedbacksList.innerHTML = '<div class="manage-empty">Could not reach the server.</div>';
+    }
+  }
+
+  function renderFeedbacksList() {
+    if (manageState.feedbacks.length === 0) {
+      feedbacksList.innerHTML = '<div class="manage-empty">No feedback for this user.</div>';
+      return;
+    }
+
+    feedbacksList.innerHTML = '';
+    manageState.feedbacks.forEach((embed, index) => {
+      const card = document.createElement('div');
+      card.className = 'feedback-card';
+
+      const total = manageState.feedbacks.length;
+      card.innerHTML = `
+        <div class="feedback-card-top">
+          <div style="min-width:0;">
+            <div class="fc-index">#${index + 1} of ${total}</div>
+            <div class="fc-title">${escapeHtml(embed.title || '(no title)')}</div>
+            <div class="fc-desc">${escapeHtml(embed.description || '')}</div>
+          </div>
+          <div class="feedback-card-actions">
+            <button class="secondary icon-btn" data-action="up" ${index === 0 ? 'disabled' : ''}>↑</button>
+            <button class="secondary icon-btn" data-action="down" ${index === total - 1 ? 'disabled' : ''}>↓</button>
+            <button class="secondary icon-btn" data-action="edit">Edit</button>
+            <button class="danger icon-btn" data-action="delete">Delete</button>
+          </div>
+        </div>
+      `;
+
+      card.querySelector('[data-action="up"]').addEventListener('click', () => moveFeedback(index, -1));
+      card.querySelector('[data-action="down"]').addEventListener('click', () => moveFeedback(index, 1));
+      card.querySelector('[data-action="edit"]').addEventListener('click', () => startEditFeedback(index));
+      card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteFeedback(index));
+
+      feedbacksList.appendChild(card);
+    });
+  }
+
+  async function moveFeedback(index, direction) {
+    const otherIndex = index + direction;
+    if (otherIndex < 0 || otherIndex >= manageState.feedbacks.length) return;
+
+    const order = manageState.feedbacks.map((_, i) => i);
+    [order[index], order[otherIndex]] = [order[otherIndex], order[index]];
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/feedback/${manageState.selectedUserId}/reorder`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({ order }),
+      });
+      if (res.status === 401) {
+        clearToken();
+        showLogin();
+        return;
+      }
+      await loadUserFeedbacks(manageState.selectedUserId);
+    } catch (err) {
+      alert('Could not reach the server.');
+    }
+  }
+
+  async function deleteFeedback(index) {
+    if (!confirm('Delete this feedback? This cannot be undone.')) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/feedback/${manageState.selectedUserId}/${index}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
+      if (res.status === 401) {
+        clearToken();
+        showLogin();
+        return;
+      }
+      await loadUserFeedbacks(manageState.selectedUserId);
+      await loadUsersList();
+    } catch (err) {
+      alert('Could not reach the server.');
+    }
+  }
+
+  function startEditFeedback(index) {
+    const embed = manageState.feedbacks[index];
+    editState = { userId: manageState.selectedUserId, index };
+
+    fTargetUser.value = manageState.selectedUserId;
+    fTitle.value = embed.title || '';
+    fDescription.value = embed.description || '';
+    const hexColor = typeof embed.color === 'number'
+      ? '#' + embed.color.toString(16).padStart(6, '0')
+      : '#e91e63';
+    fColorHex.value = hexColor;
+    fColor.value = hexColor;
+    fAuthor.value = (embed.author && embed.author.name) || '';
+    fFooter.value = (embed.footer && embed.footer.text) || '';
+    fThumbnail.value = (embed.thumbnail && embed.thumbnail.url) || '';
+    fImage.value = (embed.image && embed.image.url) || '';
+    fTimestamp.checked = Boolean(embed.timestamp);
+    extraFields = (embed.fields || []).map((f) => ({
+      name: f.name || '',
+      value: f.value || '',
+      inline: Boolean(f.inline),
+    }));
+    renderFieldRows();
+    updatePreview();
+
+    submitError.textContent = '';
+    submitSuccess.textContent = '';
+    setEditModeUI(true, `Editing feedback #${index + 1} for ${manageState.selectedUserId}`);
+    switchTab('submit');
+  }
+
+  renderFieldRows();
   updatePreview();
 </script>
 </body>
