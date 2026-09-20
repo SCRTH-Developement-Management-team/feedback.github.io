@@ -392,22 +392,6 @@
     word-break: break-word;
   }
 
-  .embed-box img.embed-thumb {
-    float: right;
-    width: 72px;
-    height: 72px;
-    object-fit: cover;
-    border-radius: 4px;
-    margin-left: 12px;
-  }
-
-  .embed-box img.embed-image {
-    width: 100%;
-    border-radius: 4px;
-    margin-top: 8px;
-    display: block;
-  }
-
   .embed-footer {
     font-size: 12px;
     color: #949ba4;
@@ -603,28 +587,8 @@
           </div>
         </div>
 
-        <div class="row-2">
-          <div>
-            <label for="f-thumbnail">Thumbnail (image URL)</label>
-            <input type="url" id="f-thumbnail" placeholder="https://...">
-          </div>
-          <div>
-            <label for="f-image">Large image (URL)</label>
-            <input type="url" id="f-image" placeholder="https://...">
-          </div>
-        </div>
-        <div class="hint" style="margin-top:-10px;">
-          Paste a direct link to an image (starts with <code>http://</code> or <code>https://</code>) —
-          not a pasted screenshot or a Discord attachment upload button. If you don't have a link yet,
-          upload the image to a Discord channel first and copy its link.
-        </div>
-
         <label for="f-footer">Footer text <span class="char-count" id="count-footer">0/2048</span></label>
         <input type="text" id="f-footer" maxlength="2048" placeholder="e.g. 1/1">
-
-        <label for="f-footer-icon">Footer icon (image URL)</label>
-        <input type="url" id="f-footer-icon" value="https://images-ext-1.discordapp.net/external/XIGW6-AkXgL-zKJ_PazqP3YEymlPN2k58WCnh7IZr3c/https/message.style/cdn/images/fde4f74bac334b68717dabf56c3a1e40126b37e0a6cb617ad4eac33b327ba5ea.png?format=webp&amp;quality=lossless" placeholder="https://...">
-        <div class="hint">The default icon is used when footer text is set. Clear this field to use no icon.</div>
 
         <div class="field-row" style="margin-top: 4px;">
           <label style="grid-column: 1 / -1; margin-bottom: 0;">Additional fields</label>
@@ -653,11 +617,9 @@
         <div id="preview-empty" class="empty-hint">Nothing to show yet.</div>
         <div class="embed-box hidden" id="preview-box">
           <div id="preview-author" class="embed-author hidden"></div>
-          <img id="preview-thumb" class="embed-thumb hidden" src="">
           <div id="preview-title" class="embed-title hidden"></div>
           <div id="preview-desc" class="embed-desc hidden"></div>
           <div id="preview-fields" class="embed-fields"></div>
-          <img id="preview-image" class="embed-image hidden" src="">
           <div id="preview-footer" class="embed-footer hidden"></div>
         </div>
       </div>
@@ -746,10 +708,7 @@
   const fColor = document.getElementById('f-color');
   const fColorHex = document.getElementById('f-color-hex');
   const fAuthor = document.getElementById('f-author');
-  const fThumbnail = document.getElementById('f-thumbnail');
-  const fImage = document.getElementById('f-image');
   const fFooter = document.getElementById('f-footer');
-  const fFooterIcon = document.getElementById('f-footer-icon');
   const fTimestamp = document.getElementById('f-timestamp');
   const fieldsContainer = document.getElementById('fields-container');
   const addFieldBtn = document.getElementById('add-field-btn');
@@ -952,7 +911,7 @@
     updatePreview();
   });
 
-  [fTargetUser, fTitle, fDescription, fAuthor, fThumbnail, fImage, fFooter, fFooterIcon, fTimestamp].forEach((el) => {
+  [fTargetUser, fTitle, fDescription, fAuthor, fFooter, fTimestamp].forEach((el) => {
     el.addEventListener('input', updatePreview);
   });
 
@@ -967,7 +926,7 @@
       ? `For user ID: ${fTargetUser.value}`
       : 'No recipient set';
 
-    const hasContent = fTitle.value || fDescription.value || fAuthor.value || fFooter.value || fThumbnail.value || fImage.value || extraFields.some(f => f.name || f.value);
+    const hasContent = fTitle.value || fDescription.value || fAuthor.value || fFooter.value || extraFields.some(f => f.name || f.value);
 
     document.getElementById('preview-empty').classList.toggle('hidden', hasContent);
     document.getElementById('preview-box').classList.toggle('hidden', !hasContent);
@@ -988,28 +947,12 @@
     descEl.textContent = fDescription.value;
     descEl.classList.toggle('hidden', !fDescription.value);
 
-    const thumbEl = document.getElementById('preview-thumb');
-    thumbEl.src = fThumbnail.value;
-    thumbEl.classList.toggle('hidden', !fThumbnail.value);
-
-    const imageEl = document.getElementById('preview-image');
-    imageEl.src = fImage.value;
-    imageEl.classList.toggle('hidden', !fImage.value);
-
     const footerEl = document.getElementById('preview-footer');
     let footerText = fFooter.value;
     if (fTimestamp.checked) {
       footerText = footerText ? `${footerText} • ${new Date().toLocaleString()}` : new Date().toLocaleString();
     }
-    footerEl.innerHTML = '';
-    if (footerText && fFooterIcon.value) {
-      const footerIconEl = document.createElement('img');
-      footerIconEl.src = fFooterIcon.value;
-      footerIconEl.alt = '';
-      footerIconEl.style.cssText = 'width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;';
-      footerEl.appendChild(footerIconEl);
-    }
-    footerEl.appendChild(document.createTextNode(footerText));
+    footerEl.textContent = footerText || '';
     footerEl.classList.toggle('hidden', !footerText);
 
     const fieldsEl = document.getElementById('preview-fields');
@@ -1033,10 +976,7 @@
     fColorHex.value = '#e91e63';
     fColor.value = '#e91e63';
     fAuthor.value = '';
-    fThumbnail.value = '';
-    fImage.value = '';
     fFooter.value = '';
-    fFooterIcon.value = 'https://images-ext-1.discordapp.net/external/XIGW6-AkXgL-zKJ_PazqP3YEymlPN2k58WCnh7IZr3c/https/message.style/cdn/images/fde4f74bac334b68717dabf56c3a1e40126b37e0a6cb617ad4eac33b327ba5ea.png?format=webp&quality=lossless';
     fTimestamp.checked = false;
     extraFields = [];
     renderFieldRows();
@@ -1074,21 +1014,6 @@
       return;
     }
 
-    const isValidEmbedUrl = (value) => !value || /^https?:\/\//i.test(value);
-
-    if (!isValidEmbedUrl(fThumbnail.value)) {
-      submitError.textContent = 'Thumbnail must be a direct http(s) link, not a pasted image.';
-      return;
-    }
-    if (!isValidEmbedUrl(fImage.value)) {
-      submitError.textContent = 'Image must be a direct http(s) link, not a pasted image.';
-      return;
-    }
-    if (!isValidEmbedUrl(fFooterIcon.value)) {
-      submitError.textContent = 'Footer icon must be a direct http(s) link, not a pasted image.';
-      return;
-    }
-
     submitBtn.disabled = true;
 
     const payload = {
@@ -1098,9 +1023,6 @@
       color: fColorHex.value,
       authorName: fAuthor.value || undefined,
       footerText: fFooter.value || undefined,
-      footerIconUrl: fFooter.value && fFooterIcon.value ? fFooterIcon.value : undefined,
-      thumbnailUrl: fThumbnail.value || undefined,
-      imageUrl: fImage.value || undefined,
       timestamp: fTimestamp.checked,
       fields: extraFields.filter((f) => f.name || f.value),
     };
@@ -1307,9 +1229,6 @@
     fColor.value = hexColor;
     fAuthor.value = (embed.author && embed.author.name) || '';
     fFooter.value = (embed.footer && embed.footer.text) || '';
-    fFooterIcon.value = (embed.footer && (embed.footer.iconURL || embed.footer.icon_url)) || 'https://images-ext-1.discordapp.net/external/XIGW6-AkXgL-zKJ_PazqP3YEymlPN2k58WCnh7IZr3c/https/message.style/cdn/images/fde4f74bac334b68717dabf56c3a1e40126b37e0a6cb617ad4eac33b327ba5ea.png?format=webp&quality=lossless';
-    fThumbnail.value = (embed.thumbnail && embed.thumbnail.url) || '';
-    fImage.value = (embed.image && embed.image.url) || '';
     fTimestamp.checked = Boolean(embed.timestamp);
     extraFields = (embed.fields || []).map((f) => ({
       name: f.name || '',
