@@ -32,6 +32,7 @@
 
   .hidden { display: none !important; }
 
+  /* ---------- Shared bits ---------- */
 
   .center-screen {
     min-height: calc(100vh - 48px);
@@ -144,6 +145,8 @@
     min-height: 16px;
   }
 
+  /* ---------- Login screen ---------- */
+
   .login-card {
     width: 100%;
     max-width: 360px;
@@ -226,6 +229,7 @@
 
   .topbar-actions { display: flex; align-items: center; gap: 8px; }
 
+  /* ---------- Submit view ---------- */
 
   .app {
     width: 100%;
@@ -254,7 +258,7 @@
 
   .field-row {
     display: grid;
-    grid-template-columns: 1fr 1fr auto;
+    grid-template-columns: 1fr 1fr auto auto;
     gap: 8px;
     align-items: end;
     margin-bottom: 4px;
@@ -307,6 +311,7 @@
     gap: 12px;
   }
 
+  /* ---------- Discord-style embed preview ---------- */
 
   .discord-preview {
     background: var(--panel-2);
@@ -424,6 +429,7 @@
     margin-top: 20px;
   }
 
+  /* ---------- Manage view ---------- */
 
   .manage-view {
     display: grid;
@@ -536,7 +542,7 @@
     </div>
   </div>
 
-
+  <!-- ============ MAIN SHELL ============ -->
   <div class="shell hidden" id="app-screen">
     <div class="topbar">
       <div class="topbar-brand">
@@ -557,6 +563,7 @@
       </div>
     </div>
 
+    <!-- ---------- SUBMIT VIEW ---------- -->
     <div class="app" id="view-submit">
       <div class="panel">
         <div class="edit-banner hidden" id="edit-banner">
@@ -577,7 +584,7 @@
         <h2>Embed content</h2>
 
         <label for="f-title">Title <span class="char-count" id="count-title">0/256</span></label>
-        <input type="text" id="f-title" maxlength="256" placeholder="e.g. New performance review">
+        <input type="text" id="f-title" maxlength="256" placeholder="e.g. 2026 TSG application feedback">
 
         <label for="f-description">Description <span class="char-count" id="count-description">0/4096</span></label>
         <textarea id="f-description" maxlength="4096" placeholder="Write the feedback here..."></textarea>
@@ -591,7 +598,7 @@
             </div>
           </div>
           <div>
-            <label for="f-author">Author (shown at the top) <span class="char-count" id="count-author">0/256</span></label>
+            <label for="f-author">Author (Useless) <span class="char-count" id="count-author">0/256</span></label>
             <input type="text" id="f-author" maxlength="256" placeholder="e.g. SCRTH Staff Team">
           </div>
         </div>
@@ -609,11 +616,15 @@
         <div class="hint" style="margin-top:-10px;">
           Paste a direct link to an image (starts with <code>http://</code> or <code>https://</code>) —
           not a pasted screenshot or a Discord attachment upload button. If you don't have a link yet,
-          upload the image to a Discord channel first and copy its link, or use a host like Imgur.
+          upload the image to a Discord channel first and copy its link.
         </div>
 
         <label for="f-footer">Footer text <span class="char-count" id="count-footer">0/2048</span></label>
-        <input type="text" id="f-footer" maxlength="2048" placeholder="e.g. Sent via the feedback portal">
+        <input type="text" id="f-footer" maxlength="2048" placeholder="e.g. 1/1">
+
+        <label for="f-footer-icon">Footer icon (image URL)</label>
+        <input type="url" id="f-footer-icon" value="https://images-ext-1.discordapp.net/external/XIGW6-AkXgL-zKJ_PazqP3YEymlPN2k58WCnh7IZr3c/https/message.style/cdn/images/fde4f74bac334b68717dabf56c3a1e40126b37e0a6cb617ad4eac33b327ba5ea.png?format=webp&amp;quality=lossless" placeholder="https://...">
+        <div class="hint">The default icon is used when footer text is set. Clear this field to use no icon.</div>
 
         <div class="field-row" style="margin-top: 4px;">
           <label style="grid-column: 1 / -1; margin-bottom: 0;">Additional fields</label>
@@ -624,7 +635,7 @@
         <div class="field-row" style="margin-top:16px;">
           <div class="checkbox-wrap">
             <input type="checkbox" id="f-timestamp" style="width:auto;margin:0;">
-            <label for="f-timestamp" style="margin:0;">Add timestamp</label>
+            <label for="f-timestamp" style="margin:0;">Add timestamp (Useless)</label>
           </div>
         </div>
 
@@ -652,6 +663,7 @@
       </div>
     </div>
 
+    <!-- ---------- MANAGE VIEW ---------- -->
     <div class="manage-view hidden" id="view-manage">
       <div class="panel">
         <h2>Users with feedback</h2>
@@ -668,14 +680,20 @@
   </div>
 
 <script>
-
+  // -------------------------------------------------------------------
+  // CONFIG
+  // -------------------------------------------------------------------
   const API_BASE_URL = "https://feedback.wispbyte.app";
 
-
+  // Fill these in to brand the site with your organization's identity.
+  // ORG_LOGO_URL: a direct link to your logo image (square works best).
+  // Leave it empty ("") to show an auto-generated placeholder badge instead.
   const ORG_NAME = "SCRTH";
   const ORG_LOGO_URL = "https://images-ext-1.discordapp.net/external/XIGW6-AkXgL-zKJ_PazqP3YEymlPN2k58WCnh7IZr3c/https/message.style/cdn/images/fde4f74bac334b68717dabf56c3a1e40126b37e0a6cb617ad4eac33b327ba5ea.png?format=webp&quality=lossless";
 
-
+  // -------------------------------------------------------------------
+  // Branding: inject logo (or placeholder) wherever it's needed
+  // -------------------------------------------------------------------
   function initials(name) {
     return name
       .split(/\s+/)
@@ -693,7 +711,7 @@
   }
 
   document.getElementById('login-logo-slot').innerHTML = renderLogo(120);
-  document.getElementById('topbar-logo-slot').innerHTML = renderLogo(80);
+  document.getElementById('topbar-logo-slot').innerHTML = renderLogo(100);
   document.getElementById('login-org-subtitle').textContent = `Log in to save a feedback embed for a ${ORG_NAME} member. (Access is only authorised for MG+)`;
   document.getElementById('topbar-title').textContent = `${ORG_NAME} Feedback Portal`;
   document.getElementById('topbar-org-name').textContent = ORG_NAME;
@@ -705,7 +723,9 @@
     document.head.appendChild(favicon);
   }
 
-
+  // -------------------------------------------------------------------
+  // Elements
+  // -------------------------------------------------------------------
   const loginScreenWrap = document.getElementById('login-screen-wrap');
   const appScreen = document.getElementById('app-screen');
 
@@ -729,6 +749,7 @@
   const fThumbnail = document.getElementById('f-thumbnail');
   const fImage = document.getElementById('f-image');
   const fFooter = document.getElementById('f-footer');
+  const fFooterIcon = document.getElementById('f-footer-icon');
   const fTimestamp = document.getElementById('f-timestamp');
   const fieldsContainer = document.getElementById('fields-container');
   const addFieldBtn = document.getElementById('add-field-btn');
@@ -745,11 +766,13 @@
   const feedbacksTitle = document.getElementById('feedbacks-title');
   const feedbacksList = document.getElementById('feedbacks-list');
 
-  let extraFields = []; 
-  let editState = null; 
+  let extraFields = []; // { name, value, inline }
+  let editState = null; // { userId, index } when editing an existing feedback
   let manageState = { selectedUserId: null, feedbacks: [] };
 
-
+  // -------------------------------------------------------------------
+  // Session
+  // -------------------------------------------------------------------
   function getToken() { return localStorage.getItem('feedback_token'); }
   function setToken(t) { localStorage.setItem('feedback_token', t); }
   function clearToken() { localStorage.removeItem('feedback_token'); }
@@ -768,7 +791,9 @@
 
   if (getToken()) showApp();
 
-
+  // -------------------------------------------------------------------
+  // Login / logout
+  // -------------------------------------------------------------------
   loginBtn.addEventListener('click', async () => {
     loginError.textContent = '';
     loginBtn.disabled = true;
@@ -812,7 +837,9 @@
     }
   });
 
-
+  // -------------------------------------------------------------------
+  // Tabs
+  // -------------------------------------------------------------------
   function switchTab(tab) {
     const isSubmit = tab === 'submit';
     viewSubmit.classList.toggle('hidden', !isSubmit);
@@ -824,7 +851,9 @@
   tabSubmitBtn.addEventListener('click', () => switchTab('submit'));
   tabManageBtn.addEventListener('click', () => switchTab('manage'));
 
-
+  // -------------------------------------------------------------------
+  // Character counters
+  // -------------------------------------------------------------------
   function setCharCount(id, currentLength, max) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -839,7 +868,9 @@
     setCharCount('count-footer', fFooter.value.length, 2048);
   }
 
-
+  // -------------------------------------------------------------------
+  // Dynamic fields
+  // -------------------------------------------------------------------
   function renderFieldRows() {
     fieldsContainer.innerHTML = '';
     extraFields.forEach((field, index) => {
@@ -854,12 +885,24 @@
           <label>Value <span class="char-count" id="count-field-value-${index}">${field.value.length}/1024</span></label>
           <input type="text" maxlength="1024" data-index="${index}" data-key="value" value="${escapeAttr(field.value)}" style="margin-bottom:0">
         </div>
+        <div class="checkbox-wrap">
+          <input type="checkbox" data-index="${index}" data-key="inline" ${field.inline ? 'checked' : ''} style="width:auto;margin:0;">
+          <label style="margin:0;">Inline</label>
+        </div>
         <button type="button" class="remove-field" data-index="${index}">✕</button>
       `;
       fieldsContainer.appendChild(row);
     });
 
     fieldsContainer.querySelectorAll('input').forEach((input) => {
+      if (input.dataset.key === 'inline') {
+        input.addEventListener('change', (e) => {
+          const i = Number(e.target.dataset.index);
+          extraFields[i].inline = e.target.checked;
+          updatePreview();
+        });
+        return;
+      }
       input.addEventListener('input', (e) => {
         const i = Number(e.target.dataset.index);
         const key = e.target.dataset.key;
@@ -895,7 +938,9 @@
     return div.innerHTML;
   }
 
-
+  // -------------------------------------------------------------------
+  // Color sync (picker <-> text field)
+  // -------------------------------------------------------------------
   fColor.addEventListener('input', () => {
     fColorHex.value = fColor.value;
     updatePreview();
@@ -907,11 +952,13 @@
     updatePreview();
   });
 
-  [fTargetUser, fTitle, fDescription, fAuthor, fThumbnail, fImage, fFooter, fTimestamp].forEach((el) => {
+  [fTargetUser, fTitle, fDescription, fAuthor, fThumbnail, fImage, fFooter, fFooterIcon, fTimestamp].forEach((el) => {
     el.addEventListener('input', updatePreview);
   });
 
-
+  // -------------------------------------------------------------------
+  // Live Discord-style preview
+  // -------------------------------------------------------------------
   function updatePreview() {
     updateCharCounts();
 
@@ -920,7 +967,7 @@
       ? `For user ID: ${fTargetUser.value}`
       : 'No recipient set';
 
-    const hasContent = fTitle.value || fDescription.value || fAuthor.value || extraFields.some(f => f.name || f.value);
+    const hasContent = fTitle.value || fDescription.value || fAuthor.value || fFooter.value || fThumbnail.value || fImage.value || extraFields.some(f => f.name || f.value);
 
     document.getElementById('preview-empty').classList.toggle('hidden', hasContent);
     document.getElementById('preview-box').classList.toggle('hidden', !hasContent);
@@ -954,7 +1001,15 @@
     if (fTimestamp.checked) {
       footerText = footerText ? `${footerText} • ${new Date().toLocaleString()}` : new Date().toLocaleString();
     }
-    footerEl.textContent = footerText;
+    footerEl.innerHTML = '';
+    if (footerText && fFooterIcon.value) {
+      const footerIconEl = document.createElement('img');
+      footerIconEl.src = fFooterIcon.value;
+      footerIconEl.alt = '';
+      footerIconEl.style.cssText = 'width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px;';
+      footerEl.appendChild(footerIconEl);
+    }
+    footerEl.appendChild(document.createTextNode(footerText));
     footerEl.classList.toggle('hidden', !footerText);
 
     const fieldsEl = document.getElementById('preview-fields');
@@ -968,6 +1023,9 @@
     });
   }
 
+  // -------------------------------------------------------------------
+  // Reset / prefill the form
+  // -------------------------------------------------------------------
   function resetForm(keepTargetUser) {
     if (!keepTargetUser) fTargetUser.value = '';
     fTitle.value = '';
@@ -978,6 +1036,7 @@
     fThumbnail.value = '';
     fImage.value = '';
     fFooter.value = '';
+    fFooterIcon.value = 'https://images-ext-1.discordapp.net/external/XIGW6-AkXgL-zKJ_PazqP3YEymlPN2k58WCnh7IZr3c/https/message.style/cdn/images/fde4f74bac334b68717dabf56c3a1e40126b37e0a6cb617ad4eac33b327ba5ea.png?format=webp&quality=lossless';
     fTimestamp.checked = false;
     extraFields = [];
     renderFieldRows();
@@ -998,6 +1057,9 @@
     submitSuccess.textContent = '';
   });
 
+  // -------------------------------------------------------------------
+  // Submit feedback (create or edit, depending on editState)
+  // -------------------------------------------------------------------
   submitBtn.addEventListener('click', async () => {
     submitError.textContent = '';
     submitSuccess.textContent = '';
@@ -1022,6 +1084,10 @@
       submitError.textContent = 'Image must be a direct http(s) link, not a pasted image.';
       return;
     }
+    if (!isValidEmbedUrl(fFooterIcon.value)) {
+      submitError.textContent = 'Footer icon must be a direct http(s) link, not a pasted image.';
+      return;
+    }
 
     submitBtn.disabled = true;
 
@@ -1032,6 +1098,7 @@
       color: fColorHex.value,
       authorName: fAuthor.value || undefined,
       footerText: fFooter.value || undefined,
+      footerIconUrl: fFooter.value && fFooterIcon.value ? fFooterIcon.value : undefined,
       thumbnailUrl: fThumbnail.value || undefined,
       imageUrl: fImage.value || undefined,
       timestamp: fTimestamp.checked,
@@ -1075,7 +1142,7 @@
         switchTab('manage');
         loadUserFeedbacks(finishedUserId);
       } else {
-        resetForm(true); 
+        resetForm(true); // keep target user ID in case you're adding several
       }
     } catch (err) {
       submitError.textContent = "Could not reach the server.";
@@ -1085,7 +1152,7 @@
   });
 
   // -------------------------------------------------------------------
-  // LA LISTE DES USERS DE SES MORTS
+  // Manage view: list users
   // -------------------------------------------------------------------
   async function loadUsersList() {
     usersList.innerHTML = '<div class="manage-empty">Loading...</div>';
@@ -1118,7 +1185,7 @@
   }
 
   // -------------------------------------------------------------------
-  // LE MÉNAGE DE LA VISUALISATION DU SAINT MERDIER
+  // Manage view: list one user's feedbacks
   // -------------------------------------------------------------------
   async function loadUserFeedbacks(userId) {
     manageState.selectedUserId = userId;
@@ -1240,6 +1307,7 @@
     fColor.value = hexColor;
     fAuthor.value = (embed.author && embed.author.name) || '';
     fFooter.value = (embed.footer && embed.footer.text) || '';
+    fFooterIcon.value = (embed.footer && (embed.footer.iconURL || embed.footer.icon_url)) || 'https://images-ext-1.discordapp.net/external/XIGW6-AkXgL-zKJ_PazqP3YEymlPN2k58WCnh7IZr3c/https/message.style/cdn/images/fde4f74bac334b68717dabf56c3a1e40126b37e0a6cb617ad4eac33b327ba5ea.png?format=webp&quality=lossless';
     fThumbnail.value = (embed.thumbnail && embed.thumbnail.url) || '';
     fImage.value = (embed.image && embed.image.url) || '';
     fTimestamp.checked = Boolean(embed.timestamp);
