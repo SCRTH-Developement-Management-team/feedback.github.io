@@ -1,7 +1,7 @@
 # SCRTH FEEDBACK PORTAL INSTRUCTIONS
 
 ## 1. Rules
-- 1a You must fully comply with SCRTH TOS[^1] & [SCRTH rules](https://discord.com/channels/1421603145074737254/1443313518270087258)
+- 1a You must fully comply with [SCRTH TOS](https://scrth-developement-management-team.github.io/scrth-tos/index.html) & [SCRTH rules](https://discord.com/channels/1421603145074737254/1443313518270087258)
   - 1b You must fully understand [discord TOS](https://discord.com/terms) and [discord community guidelines](https://discord.com/guidelines)
 - 2 You must agreed that all of the feedbacks are **100% internal**. *(excluding the data chart in the TOS)*
 - 3 Sharing your password to any member in SCRTH including staff members will most likely get you demoted. *(excluding deadslights)*
@@ -41,11 +41,11 @@ All of the fields that have a colored square around them are the things that you
 > 
 > - **Orange** : The title example: `September 2026 TSG application feedback`
 > 
-> - **Yellow** : The main place where you'll enter the feedback. You MUST follow the feedback prompt[^2].
+> - **Yellow** : The main place where you'll enter the feedback. You MUST follow the feedback prompt.
 >
 > - **Green** : The footer, this is where you'll put the number of embeds, example : `1/2`
 >
-> - **White** : This is used to remove or add fields, with the inline disabled (by default) or enabled[^3].
+> - **White** : This is used to remove or add fields, with the inline disabled (by default) or enabled.
 > 
 > - **Pink** : Where you'll put the color in hexadecimal.
 
@@ -81,11 +81,7 @@ All of the fields that have a colored square around them are the things that you
 > [!CAUTION]
 >
 > Only delete feedback when you're sure that it's good. **Think, Act, Observe, Review.** Failure to do so may result in a warn. (yes that's a nuclear thing but anyway)
-
-
-[^1]: The SCRTH TOS website is still in developement, we currently have a google site version [here](https://sites.google.com/view/scrth-privacy-policy/privacy-policy-tos) but it's at some points outdated. 
-[^2]: Yet we don't have an actual prompt but the directive team is hardly working on making one.
-[^3]: The inline feature is still not in operation, it will soon arrive. 
+ 
 
 > [!WARNING]
 > Not all of the useful informations have been listed above, if you have any inquiries, please refer to `[ID] DeadsLights`
