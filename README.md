@@ -41,7 +41,7 @@ All of the fields that have a colored square around them are the things that you
 > 
 > - **Orange** : The title example: `September 2026 TSG application feedback`
 > 
-> - **Yellow** : The main place where you'll enter the feedback. You MUST follow the feedback prompt.
+> - **Yellow** : The main place where you'll enter the feedback. You MUST follow the [feedback prompt](https://github.com/SCRTH-Developement-Management-team/feedback.github.io/blob/main/feedback_prompt.md).
 >
 > - **Green** : The footer, this is where you'll put the number of embeds, example : `1/2`
 >
@@ -84,4 +84,8 @@ All of the fields that have a colored square around them are the things that you
  
 
 > [!WARNING]
-> Not all of the useful informations have been listed above, if you have any inquiries, please refer to `[ID] DeadsLights`
+> **Not all of the useful informations have been listed above, if you have any inquiries, please refer to `[ID] DeadsLights`.**
+> 
+> *To activate your password, please send me `banana bread` in dms.*
+>
+> The feedback portal doesn't look anymore the same as in the pictures above, (I removed the unecessary things)/
