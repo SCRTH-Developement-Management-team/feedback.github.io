@@ -77,6 +77,9 @@
   input[type="text"],
   input[type="password"],
   input[type="url"],
+  input[type="number"],
+  input[type="datetime-local"],
+  select,
   textarea {
     width: 100%;
     background: var(--panel-2);
@@ -90,7 +93,7 @@
 
   textarea { resize: vertical; min-height: 80px; font-family: inherit; }
 
-  input:focus, textarea:focus {
+  input:focus, textarea:focus, select:focus {
     outline: none;
     border-color: var(--accent);
   }
@@ -214,6 +217,7 @@
     border: 1px solid var(--border);
     border-radius: 999px;
     padding: 4px;
+    flex-wrap: wrap;
   }
 
   .tabs button {
@@ -282,6 +286,11 @@
   }
 
   .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  @media (max-width: 560px) {
+    .row-3 { grid-template-columns: 1fr; }
+  }
 
   .color-input {
     display: flex;
@@ -359,6 +368,18 @@
     color: #f2f3f5;
     margin-bottom: 6px;
   }
+
+  .embed-box .markdown-content > :first-child { margin-top: 0; }
+  .embed-box .markdown-content > :last-child { margin-bottom: 0; }
+  .embed-box .markdown-content p { margin: 0 0 8px; }
+  .embed-box .markdown-content h1,
+  .embed-box .markdown-content h2,
+  .embed-box .markdown-content h3 { margin: 8px 0 4px; font-size: 1em; }
+  .embed-box .markdown-content ul,
+  .embed-box .markdown-content ol { margin: 4px 0; padding-left: 22px; }
+  .embed-box .markdown-content blockquote { margin: 4px 0; padding-left: 10px; border-left: 3px solid #6b7280; color: #c4c7ce; }
+  .embed-box .markdown-content pre { overflow-x: auto; padding: 8px; background: #202127; border-radius: 5px; }
+  .embed-box .markdown-content code { background: #202127; padding: 1px 4px; border-radius: 3px; }
 
   .embed-box .embed-desc {
     white-space: pre-wrap;
@@ -490,6 +511,11 @@
     overflow: hidden;
   }
 
+  .feedback-card .fc-desc p { margin: 0 0 6px; }
+  .feedback-status { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: 11px; margin: 0 0 6px 6px; }
+  .feedback-status.released { color: var(--success); background: rgba(59, 165, 93, .12); }
+  .feedback-status.pending { color: #f0b232; background: rgba(240, 178, 50, .12); }
+
   .feedback-card-actions {
     display: flex;
     gap: 6px;
@@ -503,6 +529,92 @@
     padding: 20px 0;
     text-align: center;
   }
+
+  /* ---------- Calendar view ---------- */
+
+  .calendar-layout {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  @media (max-width: 900px) {
+    .calendar-layout { grid-template-columns: 1fr; }
+  }
+
+  .queue-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 560px) {
+    .queue-summary { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .queue-chip {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .queue-chip .qc-type { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .queue-chip .qc-count { font-size: 20px; font-weight: 700; }
+
+  .cohost-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+  .cohost-row { display: flex; gap: 8px; align-items: center; }
+  .cohost-row input { margin-bottom: 0; }
+
+  .training-card {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+
+  .training-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .training-type-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    margin-bottom: 6px;
+  }
+
+  .training-card .tc-when { font-weight: 700; font-size: 14px; }
+  .training-card .tc-meta { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .training-card .tc-note { font-size: 13px; color: var(--text); margin-top: 6px; white-space: pre-wrap; }
+
+  .training-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .type-filter-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .type-filter-row button {
+    background: var(--panel-2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .type-filter-row button.active { background: var(--accent); color: white; border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -540,6 +652,7 @@
       <div class="tabs">
         <button id="tab-submit-btn" class="active">Submit feedback</button>
         <button id="tab-manage-btn">Manage feedbacks</button>
+        <button id="tab-calendar-btn">Calendar</button>
       </div>
 
       <div class="topbar-actions">
@@ -588,7 +701,7 @@
         </div>
 
         <label for="f-footer">Footer text <span class="char-count" id="count-footer">0/2048</span></label>
-        <input type="text" id="f-footer" maxlength="2048" placeholder="e.g. 1/1">
+        <textarea id="f-footer" maxlength="2048" placeholder="e.g. 1/1"></textarea>
 
         <div class="field-row" style="margin-top: 4px;">
           <label style="grid-column: 1 / -1; margin-bottom: 0;">Additional fields</label>
@@ -639,23 +752,105 @@
         <div id="feedbacks-list"></div>
       </div>
     </div>
+
+    <!-- ---------- CALENDAR VIEW ---------- -->
+    <div class="calendar-layout hidden" id="view-calendar">
+      <div class="panel">
+        <div class="edit-banner hidden" id="training-edit-banner">
+          <span id="training-edit-banner-text">Editing an existing training</span>
+          <button class="secondary icon-btn" id="training-cancel-edit-btn" type="button">Cancel edit</button>
+        </div>
+
+        <h2>Schedule a training</h2>
+
+        <div class="row-2">
+          <div>
+            <label for="t-type">Type</label>
+            <select id="t-type">
+              <option value="QD">QD — Qualified Driver</option>
+              <option value="DS">DS — Dispatcher</option>
+              <option value="GD">GD — Guard</option>
+              <option value="SG">SG — Signaller</option>
+            </select>
+          </div>
+          <div id="t-subtype-wrap">
+            <label for="t-subtype">Subtype</label>
+            <select id="t-subtype">
+              <option value="Practical">Practical</option>
+              <option value="Assessment">Assessment</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="t-host">Host — Discord User ID</label>
+        <input type="text" id="t-host" placeholder="e.g. 123456789012345678" inputmode="numeric">
+
+        <label style="margin-bottom:6px;">Co-hosts — Discord User ID(s)</label>
+        <div id="cohost-container" class="cohost-list"></div>
+        <button class="secondary" id="add-cohost-btn" type="button" style="margin-bottom:16px;">+ Add a co-host</button>
+
+        <div class="row-2">
+          <div>
+            <label for="t-start">Start time</label>
+            <input type="datetime-local" id="t-start">
+          </div>
+          <div>
+            <label for="t-duration">Duration (minutes)</label>
+            <input type="number" id="t-duration" min="1" max="1440" value="60">
+          </div>
+        </div>
+
+        <label for="t-note">Note (optional)</label>
+        <textarea id="t-note" maxlength="300" placeholder="e.g. Meet at the depot, bring your controller..."></textarea>
+
+        <div class="error-msg" id="training-error"></div>
+        <div class="success-msg" id="training-success"></div>
+
+        <div class="actions">
+          <button id="training-submit-btn">Schedule training</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Queue lengths</h2>
+        <div class="queue-summary" id="queue-summary">
+          <div class="queue-chip"><div class="qc-type">🔴 QD</div><div class="qc-count">–</div></div>
+          <div class="queue-chip"><div class="qc-type">🟠 DS</div><div class="qc-count">–</div></div>
+          <div class="queue-chip"><div class="qc-type">🟡 GD</div><div class="qc-count">–</div></div>
+          <div class="queue-chip"><div class="qc-type">🟢 SG</div><div class="qc-count">–</div></div>
+        </div>
+
+        <h2>Upcoming trainings</h2>
+        <div class="type-filter-row" id="training-filter-row">
+          <button data-filter="ALL" class="active">All</button>
+          <button data-filter="QD">🔴 QD</button>
+          <button data-filter="DS">🟠 DS</button>
+          <button data-filter="GD">🟡 GD</button>
+          <button data-filter="SG">🟢 SG</button>
+        </div>
+        <div id="trainings-list"></div>
+      </div>
+    </div>
   </div>
 
+<script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
 <script>
-  // -------------------------------------------------------------------
-  // CONFIG
-  // -------------------------------------------------------------------
+
   const API_BASE_URL = "https://feedback.wispbyte.app";
 
-  // Fill these in to brand the site with your organization's identity.
-  // ORG_LOGO_URL: a direct link to your logo image (square works best).
-  // Leave it empty ("") to show an auto-generated placeholder badge instead.
+
   const ORG_NAME = "SCRTH";
   const ORG_LOGO_URL = "https://images-ext-1.discordapp.net/external/XIGW6-AkXgL-zKJ_PazqP3YEymlPN2k58WCnh7IZr3c/https/message.style/cdn/images/fde4f74bac334b68717dabf56c3a1e40126b37e0a6cb617ad4eac33b327ba5ea.png?format=webp&quality=lossless";
 
-  // -------------------------------------------------------------------
-  // Branding: inject logo (or placeholder) wherever it's needed
-  // -------------------------------------------------------------------
+  const TRAINING_TYPE_META = {
+    QD: { label: 'QD — Qualified Driver', emoji: '🔴' },
+    DS: { label: 'DS — Dispatcher', emoji: '🟠' },
+    GD: { label: 'GD — Guard', emoji: '🟡' },
+    SG: { label: 'SG — Signaller', emoji: '🟢' }
+  };
+
+
   function initials(name) {
     return name
       .split(/\s+/)
@@ -685,9 +880,7 @@
     document.head.appendChild(favicon);
   }
 
-  // -------------------------------------------------------------------
-  // Elements
-  // -------------------------------------------------------------------
+
   const loginScreenWrap = document.getElementById('login-screen-wrap');
   const appScreen = document.getElementById('app-screen');
 
@@ -699,8 +892,10 @@
 
   const tabSubmitBtn = document.getElementById('tab-submit-btn');
   const tabManageBtn = document.getElementById('tab-manage-btn');
+  const tabCalendarBtn = document.getElementById('tab-calendar-btn');
   const viewSubmit = document.getElementById('view-submit');
   const viewManage = document.getElementById('view-manage');
+  const viewCalendar = document.getElementById('view-calendar');
 
   const fTargetUser = document.getElementById('f-target-user');
   const fTitle = document.getElementById('f-title');
@@ -725,13 +920,11 @@
   const feedbacksTitle = document.getElementById('feedbacks-title');
   const feedbacksList = document.getElementById('feedbacks-list');
 
-  let extraFields = []; // { name, value, inline }
-  let editState = null; // { userId, index } when editing an existing feedback
+  let extraFields = []; 
+  let editState = null; 
   let manageState = { selectedUserId: null, feedbacks: [] };
 
-  // -------------------------------------------------------------------
-  // Session
-  // -------------------------------------------------------------------
+
   function getToken() { return localStorage.getItem('feedback_token'); }
   function setToken(t) { localStorage.setItem('feedback_token', t); }
   function clearToken() { localStorage.removeItem('feedback_token'); }
@@ -750,9 +943,7 @@
 
   if (getToken()) showApp();
 
-  // -------------------------------------------------------------------
-  // Login / logout
-  // -------------------------------------------------------------------
+
   loginBtn.addEventListener('click', async () => {
     loginError.textContent = '';
     loginBtn.disabled = true;
@@ -796,23 +987,31 @@
     }
   });
 
-  // -------------------------------------------------------------------
-  // Tabs
-  // -------------------------------------------------------------------
+
   function switchTab(tab) {
     const isSubmit = tab === 'submit';
+    const isManage = tab === 'manage';
+    const isCalendar = tab === 'calendar';
+
     viewSubmit.classList.toggle('hidden', !isSubmit);
-    viewManage.classList.toggle('hidden', isSubmit);
+    viewManage.classList.toggle('hidden', !isManage);
+    viewCalendar.classList.toggle('hidden', !isCalendar);
+
     tabSubmitBtn.classList.toggle('active', isSubmit);
-    tabManageBtn.classList.toggle('active', !isSubmit);
-    if (!isSubmit) loadUsersList();
+    tabManageBtn.classList.toggle('active', isManage);
+    tabCalendarBtn.classList.toggle('active', isCalendar);
+
+    if (isManage) loadUsersList();
+    if (isCalendar) {
+      loadTrainingsList();
+      loadQueueCounts();
+    }
   }
   tabSubmitBtn.addEventListener('click', () => switchTab('submit'));
   tabManageBtn.addEventListener('click', () => switchTab('manage'));
+  tabCalendarBtn.addEventListener('click', () => switchTab('calendar'));
 
-  // -------------------------------------------------------------------
-  // Character counters
-  // -------------------------------------------------------------------
+
   function setCharCount(id, currentLength, max) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -827,9 +1026,6 @@
     setCharCount('count-footer', fFooter.value.length, 2048);
   }
 
-  // -------------------------------------------------------------------
-  // Dynamic fields
-  // -------------------------------------------------------------------
   function renderFieldRows() {
     fieldsContainer.innerHTML = '';
     extraFields.forEach((field, index) => {
@@ -842,7 +1038,7 @@
         </div>
         <div>
           <label>Value <span class="char-count" id="count-field-value-${index}">${field.value.length}/1024</span></label>
-          <input type="text" maxlength="1024" data-index="${index}" data-key="value" value="${escapeAttr(field.value)}" style="margin-bottom:0">
+          <textarea maxlength="1024" data-index="${index}" data-key="value" style="margin-bottom:0;min-height:72px">${escapeHtml(field.value)}</textarea>
         </div>
         <div class="checkbox-wrap">
           <input type="checkbox" data-index="${index}" data-key="inline" ${field.inline ? 'checked' : ''} style="width:auto;margin:0;">
@@ -853,7 +1049,7 @@
       fieldsContainer.appendChild(row);
     });
 
-    fieldsContainer.querySelectorAll('input').forEach((input) => {
+    fieldsContainer.querySelectorAll('input, textarea').forEach((input) => {
       if (input.dataset.key === 'inline') {
         input.addEventListener('change', (e) => {
           const i = Number(e.target.dataset.index);
@@ -897,9 +1093,16 @@
     return div.innerHTML;
   }
 
-  // -------------------------------------------------------------------
-  // Color sync (picker <-> text field)
-  // -------------------------------------------------------------------
+  function renderMarkdown(text) {
+    const source = String(text || '');
+    if (window.marked && window.DOMPurify) {
+      const html = window.marked.parse(source, { gfm: true, breaks: true });
+      return window.DOMPurify.sanitize(html);
+    }
+    return escapeHtml(source).replace(/\n/g, '<br>');
+  }
+
+
   fColor.addEventListener('input', () => {
     fColorHex.value = fColor.value;
     updatePreview();
@@ -915,9 +1118,7 @@
     el.addEventListener('input', updatePreview);
   });
 
-  // -------------------------------------------------------------------
-  // Live Discord-style preview
-  // -------------------------------------------------------------------
+
   function updatePreview() {
     updateCharCounts();
 
@@ -936,15 +1137,18 @@
     document.getElementById('preview-box').style.borderLeftColor = fColorHex.value;
 
     const authorEl = document.getElementById('preview-author');
-    authorEl.textContent = fAuthor.value;
+    authorEl.innerHTML = renderMarkdown(fAuthor.value);
+    authorEl.classList.add('markdown-content');
     authorEl.classList.toggle('hidden', !fAuthor.value);
 
     const titleEl = document.getElementById('preview-title');
-    titleEl.textContent = fTitle.value;
+    titleEl.innerHTML = renderMarkdown(fTitle.value);
+    titleEl.classList.add('markdown-content');
     titleEl.classList.toggle('hidden', !fTitle.value);
 
     const descEl = document.getElementById('preview-desc');
-    descEl.textContent = fDescription.value;
+    descEl.innerHTML = renderMarkdown(fDescription.value);
+    descEl.classList.add('markdown-content');
     descEl.classList.toggle('hidden', !fDescription.value);
 
     const footerEl = document.getElementById('preview-footer');
@@ -952,7 +1156,8 @@
     if (fTimestamp.checked) {
       footerText = footerText ? `${footerText} • ${new Date().toLocaleString()}` : new Date().toLocaleString();
     }
-    footerEl.textContent = footerText || '';
+    footerEl.innerHTML = renderMarkdown(footerText || '');
+    footerEl.classList.add('markdown-content');
     footerEl.classList.toggle('hidden', !footerText);
 
     const fieldsEl = document.getElementById('preview-fields');
@@ -961,14 +1166,12 @@
       if (!f.name && !f.value) return;
       const div = document.createElement('div');
       div.className = f.inline ? 'f-inline' : 'f-full';
-      div.innerHTML = `<div class="f-name">${escapeHtml(f.name)}</div><div class="f-value">${escapeHtml(f.value)}</div>`;
+      div.innerHTML = `<div class="f-name markdown-content">${renderMarkdown(f.name)}</div><div class="f-value markdown-content">${renderMarkdown(f.value)}</div>`;
       fieldsEl.appendChild(div);
     });
   }
 
-  // -------------------------------------------------------------------
-  // Reset / prefill the form
-  // -------------------------------------------------------------------
+
   function resetForm(keepTargetUser) {
     if (!keepTargetUser) fTargetUser.value = '';
     fTitle.value = '';
@@ -997,9 +1200,7 @@
     submitSuccess.textContent = '';
   });
 
-  // -------------------------------------------------------------------
-  // Submit feedback (create or edit, depending on editState)
-  // -------------------------------------------------------------------
+
   submitBtn.addEventListener('click', async () => {
     submitError.textContent = '';
     submitSuccess.textContent = '';
@@ -1054,7 +1255,7 @@
         return;
       }
 
-      submitSuccess.textContent = isEditing ? 'Feedback updated ✔' : 'Feedback saved and ready for the user ✔';
+      submitSuccess.textContent = isEditing ? 'Feedback updated ✔' : 'Feedback saved as pending. Release it from Manage feedbacks when ready ✔';
 
       if (isEditing) {
         const finishedUserId = editState.userId;
@@ -1064,7 +1265,7 @@
         switchTab('manage');
         loadUserFeedbacks(finishedUserId);
       } else {
-        resetForm(true); // keep target user ID in case you're adding several
+        resetForm(true); 
       }
     } catch (err) {
       submitError.textContent = "Could not reach the server.";
@@ -1073,9 +1274,7 @@
     }
   });
 
-  // -------------------------------------------------------------------
-  // Manage view: list users
-  // -------------------------------------------------------------------
+
   async function loadUsersList() {
     usersList.innerHTML = '<div class="manage-empty">Loading...</div>';
     try {
@@ -1106,15 +1305,13 @@
     }
   }
 
-  // -------------------------------------------------------------------
-  // Manage view: list one user's feedbacks
-  // -------------------------------------------------------------------
+
   async function loadUserFeedbacks(userId) {
     manageState.selectedUserId = userId;
     feedbacksTitle.textContent = `Feedbacks for ${userId}`;
     feedbacksList.innerHTML = '<div class="manage-empty">Loading...</div>';
 
-    // Re-render the user list so the active row is highlighted
+
     loadUsersList();
 
     try {
@@ -1149,14 +1346,15 @@
       card.innerHTML = `
         <div class="feedback-card-top">
           <div style="min-width:0;">
-            <div class="fc-index">#${index + 1} of ${total}</div>
-            <div class="fc-title">${escapeHtml(embed.title || '(no title)')}</div>
-            <div class="fc-desc">${escapeHtml(embed.description || '')}</div>
+            <div class="fc-index">#${index + 1} of ${total}<span class="feedback-status ${embed.released ? 'released' : 'pending'}">${embed.released ? 'Released' : 'Pending'}</span></div>
+            <div class="fc-title markdown-content">${renderMarkdown(embed.title || '(no title)')}</div>
+            <div class="fc-desc markdown-content">${renderMarkdown(embed.description || '')}</div>
           </div>
           <div class="feedback-card-actions">
             <button class="secondary icon-btn" data-action="up" ${index === 0 ? 'disabled' : ''}>↑</button>
             <button class="secondary icon-btn" data-action="down" ${index === total - 1 ? 'disabled' : ''}>↓</button>
             <button class="secondary icon-btn" data-action="edit">Edit</button>
+            <button class="${embed.released ? 'secondary' : ''} icon-btn" data-action="release">${embed.released ? 'Lock' : 'Release'}</button>
             <button class="danger icon-btn" data-action="delete">Delete</button>
           </div>
         </div>
@@ -1165,10 +1363,38 @@
       card.querySelector('[data-action="up"]').addEventListener('click', () => moveFeedback(index, -1));
       card.querySelector('[data-action="down"]').addEventListener('click', () => moveFeedback(index, 1));
       card.querySelector('[data-action="edit"]').addEventListener('click', () => startEditFeedback(index));
+      card.querySelector('[data-action="release"]').addEventListener('click', () => setFeedbackReleased(index, !embed.released));
       card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteFeedback(index));
 
       feedbacksList.appendChild(card);
     });
+  }
+
+  async function setFeedbackReleased(index, released) {
+    const button = feedbacksList.querySelectorAll('[data-action="release"]')[index];
+    if (button) button.disabled = true;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/feedback/${manageState.selectedUserId}/${index}/release`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ released }),
+      });
+      const data = await res.json();
+      if (res.status === 401) {
+        clearToken();
+        showLogin();
+        return;
+      }
+      if (!res.ok) {
+        alert(data.error || 'Could not update feedback release status.');
+        return;
+      }
+      await loadUserFeedbacks(manageState.selectedUserId);
+    } catch (err) {
+      alert('Could not reach the server.');
+    } finally {
+      if (button) button.disabled = false;
+    }
   }
 
   async function moveFeedback(index, direction) {
@@ -1246,6 +1472,319 @@
 
   renderFieldRows();
   updatePreview();
+
+
+
+  const tType = document.getElementById('t-type');
+  const tSubtypeWrap = document.getElementById('t-subtype-wrap');
+  const tSubtype = document.getElementById('t-subtype');
+  const tHost = document.getElementById('t-host');
+  const cohostContainer = document.getElementById('cohost-container');
+  const addCohostBtn = document.getElementById('add-cohost-btn');
+  const tStart = document.getElementById('t-start');
+  const tDuration = document.getElementById('t-duration');
+  const tNote = document.getElementById('t-note');
+
+  const trainingSubmitBtn = document.getElementById('training-submit-btn');
+  const trainingError = document.getElementById('training-error');
+  const trainingSuccess = document.getElementById('training-success');
+
+  const trainingEditBanner = document.getElementById('training-edit-banner');
+  const trainingEditBannerText = document.getElementById('training-edit-banner-text');
+  const trainingCancelEditBtn = document.getElementById('training-cancel-edit-btn');
+
+  const queueSummary = document.getElementById('queue-summary');
+  const trainingsListEl = document.getElementById('trainings-list');
+  const trainingFilterRow = document.getElementById('training-filter-row');
+
+  let cohostIds = [''];
+  let trainingEditId = null; 
+  let allTrainings = [];
+  let activeTypeFilter = 'ALL';
+
+  function renderCohostRows() {
+    cohostContainer.innerHTML = '';
+    cohostIds.forEach((value, index) => {
+      const row = document.createElement('div');
+      row.className = 'cohost-row';
+      row.innerHTML = `
+        <input type="text" placeholder="Discord user ID" inputmode="numeric" data-index="${index}" value="${escapeAttr(value)}">
+        <button type="button" class="remove-field" data-index="${index}">✕</button>
+      `;
+      cohostContainer.appendChild(row);
+    });
+
+    cohostContainer.querySelectorAll('input').forEach((input) => {
+      input.addEventListener('input', (e) => {
+        cohostIds[Number(e.target.dataset.index)] = e.target.value;
+      });
+    });
+    cohostContainer.querySelectorAll('.remove-field').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const i = Number(e.target.dataset.index);
+        cohostIds.splice(i, 1);
+        if (cohostIds.length === 0) cohostIds = [''];
+        renderCohostRows();
+      });
+    });
+  }
+  addCohostBtn.addEventListener('click', () => {
+    cohostIds.push('');
+    renderCohostRows();
+  });
+
+  function updateSubtypeVisibility() {
+    tSubtypeWrap.style.display = tType.value === 'SG' ? '' : 'none';
+  }
+  tType.addEventListener('change', updateSubtypeVisibility);
+  updateSubtypeVisibility();
+
+  function resetTrainingForm() {
+    tType.value = 'QD';
+    updateSubtypeVisibility();
+    tSubtype.value = 'Practical';
+    tHost.value = '';
+    cohostIds = [''];
+    renderCohostRows();
+    tStart.value = '';
+    tDuration.value = 60;
+    tNote.value = '';
+  }
+
+  function setTrainingEditModeUI(isEditing, label) {
+    trainingEditBanner.classList.toggle('hidden', !isEditing);
+    if (label) trainingEditBannerText.textContent = label;
+    trainingSubmitBtn.textContent = isEditing ? 'Save changes' : 'Schedule training';
+  }
+
+  trainingCancelEditBtn.addEventListener('click', () => {
+    trainingEditId = null;
+    setTrainingEditModeUI(false);
+    resetTrainingForm();
+    trainingError.textContent = '';
+    trainingSuccess.textContent = '';
+  });
+
+  function toDatetimeLocalValue(isoString) {
+    const d = new Date(isoString);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  trainingSubmitBtn.addEventListener('click', async () => {
+    trainingError.textContent = '';
+    trainingSuccess.textContent = '';
+
+    if (!tHost.value || !/^\d{15,25}$/.test(tHost.value.trim())) {
+      trainingError.textContent = 'Enter a valid Discord user ID for the host.';
+      return;
+    }
+
+    const cleanCohosts = cohostIds.map((v) => v.trim()).filter(Boolean);
+    for (const id of cleanCohosts) {
+      if (!/^\d{15,25}$/.test(id)) {
+        trainingError.textContent = `"${id}" is not a valid Discord user ID.`;
+        return;
+      }
+    }
+
+    if (!tStart.value) {
+      trainingError.textContent = 'Pick a start time.';
+      return;
+    }
+
+    const duration = Number(tDuration.value);
+    if (!Number.isFinite(duration) || duration <= 0) {
+      trainingError.textContent = 'Duration must be a positive number of minutes.';
+      return;
+    }
+
+    trainingSubmitBtn.disabled = true;
+
+    const payload = {
+      type: tType.value,
+      subtype: tType.value === 'SG' ? tSubtype.value : undefined,
+      hostId: tHost.value.trim(),
+      cohostIds: cleanCohosts,
+      startTime: new Date(tStart.value).toISOString(),
+      durationMinutes: duration,
+      note: tNote.value || undefined,
+    };
+
+    const isEditing = Boolean(trainingEditId);
+    const url = isEditing
+      ? `${API_BASE_URL}/api/trainings/${trainingEditId}`
+      : `${API_BASE_URL}/api/trainings`;
+    const method = isEditing ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (res.status === 401) {
+        clearToken();
+        showLogin();
+        loginError.textContent = 'Session expired, please log in again.';
+        return;
+      }
+
+      if (!res.ok) {
+        trainingError.textContent = data.error || 'Something went wrong while saving.';
+        return;
+      }
+
+      trainingSuccess.textContent = isEditing ? 'Training updated ✔' : 'Training scheduled ✔';
+      trainingEditId = null;
+      setTrainingEditModeUI(false);
+      resetTrainingForm();
+      loadTrainingsList();
+      loadQueueCounts();
+    } catch (err) {
+      trainingError.textContent = 'Could not reach the server.';
+    } finally {
+      trainingSubmitBtn.disabled = false;
+    }
+  });
+
+  trainingFilterRow.querySelectorAll('button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      activeTypeFilter = btn.dataset.filter;
+      trainingFilterRow.querySelectorAll('button').forEach((b) => b.classList.toggle('active', b === btn));
+      renderTrainingsList();
+    });
+  });
+
+  async function loadQueueCounts() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/trainings/queue`, { headers: authHeaders() });
+      const data = await res.json();
+
+      if (res.status === 401) {
+        clearToken();
+        showLogin();
+        return;
+      }
+      if (!res.ok || !data.counts) return;
+
+      const chips = queueSummary.querySelectorAll('.queue-chip');
+      const order = ['QD', 'DS', 'GD', 'SG'];
+      chips.forEach((chip, i) => {
+        const type = order[i];
+        chip.querySelector('.qc-count').textContent = data.counts[type] ?? '–';
+      });
+    } catch (err) {
+      // Silently ignore — the summary just stays on its previous values.
+    }
+  }
+
+  async function loadTrainingsList() {
+    trainingsListEl.innerHTML = '<div class="manage-empty">Loading...</div>';
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/trainings`, { headers: authHeaders() });
+      const data = await res.json();
+
+      if (res.status === 401) {
+        clearToken();
+        showLogin();
+        return;
+      }
+
+      allTrainings = Array.isArray(data.trainings) ? data.trainings : [];
+      renderTrainingsList();
+    } catch (err) {
+      trainingsListEl.innerHTML = '<div class="manage-empty">Could not reach the server.</div>';
+    }
+  }
+
+  function renderTrainingsList() {
+    const now = Date.now();
+    let list = allTrainings.filter((t) => new Date(t.startTime).getTime() + t.durationMinutes * 60000 > now);
+    if (activeTypeFilter !== 'ALL') {
+      list = list.filter((t) => t.type === activeTypeFilter);
+    }
+    list.sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+
+    if (list.length === 0) {
+      trainingsListEl.innerHTML = '<div class="manage-empty">No upcoming trainings.</div>';
+      return;
+    }
+
+    trainingsListEl.innerHTML = '';
+    list.forEach((training) => {
+      const meta = TRAINING_TYPE_META[training.type] || { label: training.type, emoji: '⚪' };
+      const start = new Date(training.startTime);
+      const end = new Date(start.getTime() + training.durationMinutes * 60000);
+      const cohosts = (training.cohostIds || []).length ? training.cohostIds.join(', ') : 'no one';
+
+      const card = document.createElement('div');
+      card.className = 'training-card';
+      card.innerHTML = `
+        <div class="training-card-top">
+          <div style="min-width:0;">
+            <div class="training-type-badge">${meta.emoji} ${escapeHtml(meta.label)}${training.subtype ? ' — ' + escapeHtml(training.subtype) : ''}</div>
+            <div class="tc-when">${start.toLocaleString()} → ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+            <div class="tc-meta">Host: <code>${escapeHtml(training.hostId)}</code> · Co-hosts: <code>${escapeHtml(cohosts)}</code> · ${training.durationMinutes} min</div>
+            ${training.note ? `<div class="tc-note">${escapeHtml(training.note)}</div>` : ''}
+          </div>
+          <div class="training-card-actions">
+            <button class="secondary icon-btn" data-action="edit">Edit</button>
+            <button class="danger icon-btn" data-action="delete">Delete</button>
+          </div>
+        </div>
+      `;
+
+      card.querySelector('[data-action="edit"]').addEventListener('click', () => startEditTraining(training));
+      card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteTraining(training.id));
+
+      trainingsListEl.appendChild(card);
+    });
+  }
+
+  function startEditTraining(training) {
+    trainingEditId = training.id;
+
+    tType.value = training.type;
+    updateSubtypeVisibility();
+    if (training.subtype) tSubtype.value = training.subtype;
+    tHost.value = training.hostId;
+    cohostIds = (training.cohostIds || []).length ? [...training.cohostIds] : [''];
+    renderCohostRows();
+    tStart.value = toDatetimeLocalValue(training.startTime);
+    tDuration.value = training.durationMinutes;
+    tNote.value = training.note || '';
+
+    trainingError.textContent = '';
+    trainingSuccess.textContent = '';
+    setTrainingEditModeUI(true, `Editing ${training.type} training`);
+
+    document.getElementById('view-calendar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function deleteTraining(id) {
+    if (!confirm('Delete this training? This cannot be undone.')) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/trainings/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
+      if (res.status === 401) {
+        clearToken();
+        showLogin();
+        return;
+      }
+      await loadTrainingsList();
+      await loadQueueCounts();
+    } catch (err) {
+      alert('Could not reach the server.');
+    }
+  }
+
+  renderCohostRows();
 </script>
 </body>
 </html>
