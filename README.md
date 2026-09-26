@@ -52,9 +52,9 @@ All of the fields that have a colored square around them are the things that you
 > [!IMPORTANT]
 > You'll only use 2 colors:
 > 
-> `#ff0000` for failed applications
+> `#ff0000` for **failed** applications
 > 
-> `#00ff34` for passed applications
+> `#00ff34` for **passed** applications
 
 ## 3. Managing feedback for multiple users 
 
