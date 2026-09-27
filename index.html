@@ -849,7 +849,11 @@
   // CONFIG
   // -------------------------------------------------------------------
   const API_BASE_URL = "https://feedback.wispbyte.app";
-  const PORTAL_SCOPE = window.location.pathname.replace(/\/+$/, '') === '/calendar' ? 'calendar' : 'feedback';
+  const portalPath = window.location.pathname.replace(/\/+$/, '');
+  const portalQuery = new URLSearchParams(window.location.search).get('portal');
+  const PORTAL_SCOPE = portalQuery === 'calendar' || portalPath === '/calendar' || portalPath.endsWith('/calendar')
+    ? 'calendar'
+    : 'feedback';
   document.body.classList.toggle('calendar-portal', PORTAL_SCOPE === 'calendar');
 
   // Fill these in to brand the site with your organization's identity.
