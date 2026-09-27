@@ -845,12 +845,17 @@
 <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
 <script>
-
+  // -------------------------------------------------------------------
+  // CONFIG
+  // -------------------------------------------------------------------
   const API_BASE_URL = "https://feedback.wispbyte.app";
   const PORTAL_SCOPE = window.location.pathname.replace(/\/+$/, '') === '/calendar' ? 'calendar' : 'feedback';
   document.body.classList.toggle('calendar-portal', PORTAL_SCOPE === 'calendar');
 
-
+  // Fill these in to brand the site with your organization's identity.
+  // ORG_LOGO_URL: a direct link to your logo image (square works best).
+  // Leave it empty ("") to show an auto-generated placeholder badge instead.
+  const ORG_NAME = "SCRTH";
   const ORG_LOGO_URL = "https://images-ext-1.discordapp.net/external/XIGW6-AkXgL-zKJ_PazqP3YEymlPN2k58WCnh7IZr3c/https/message.style/cdn/images/fde4f74bac334b68717dabf56c3a1e40126b37e0a6cb617ad4eac33b327ba5ea.png?format=webp&quality=lossless";
 
   const TRAINING_TYPE_META = {
@@ -860,7 +865,9 @@
     SG: { label: 'SG — Signaller', emoji: '🟢' }
   };
 
-
+  // -------------------------------------------------------------------
+  // Branding: inject logo (or placeholder) wherever it's needed
+  // -------------------------------------------------------------------
   function initials(name) {
     return name
       .split(/\s+/)
@@ -893,7 +900,9 @@
     document.head.appendChild(favicon);
   }
 
-
+  // -------------------------------------------------------------------
+  // Elements
+  // -------------------------------------------------------------------
   const loginScreenWrap = document.getElementById('login-screen-wrap');
   const appScreen = document.getElementById('app-screen');
 
@@ -937,7 +946,9 @@
   let editState = null; // { userId, index } when editing an existing feedback
   let manageState = { selectedUserId: null, feedbacks: [] };
 
-
+  // -------------------------------------------------------------------
+  // Session
+  // -------------------------------------------------------------------
   function tokenKey() { return `staff_portal_token_${PORTAL_SCOPE}`; }
   function getToken() { return localStorage.getItem(tokenKey()); }
   function setToken(t) { localStorage.setItem(tokenKey(), t); }
@@ -977,7 +988,9 @@
   }
   restoreSession();
 
-
+  // -------------------------------------------------------------------
+  // Login / logout
+  // -------------------------------------------------------------------
   loginBtn.addEventListener('click', async () => {
     loginError.textContent = '';
     loginBtn.disabled = true;
@@ -1022,7 +1035,9 @@
     }
   });
 
-
+  // -------------------------------------------------------------------
+  // Tabs
+  // -------------------------------------------------------------------
   function switchTab(tab) {
     const isSubmit = tab === 'submit';
     const isManage = tab === 'manage';
@@ -1046,7 +1061,9 @@
   tabManageBtn.addEventListener('click', () => switchTab('manage'));
   tabCalendarBtn.addEventListener('click', () => switchTab('calendar'));
 
-
+  // -------------------------------------------------------------------
+  // Character counters
+  // -------------------------------------------------------------------
   function setCharCount(id, currentLength, max) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -1061,7 +1078,9 @@
     setCharCount('count-footer', fFooter.value.length, 2048);
   }
 
-
+  // -------------------------------------------------------------------
+  // Dynamic fields
+  // -------------------------------------------------------------------
   function renderFieldRows() {
     fieldsContainer.innerHTML = '';
     extraFields.forEach((field, index) => {
@@ -1138,7 +1157,9 @@
     return escapeHtml(source).replace(/\n/g, '<br>');
   }
 
-
+  // -------------------------------------------------------------------
+  // Color sync (picker <-> text field)
+  // -------------------------------------------------------------------
   fColor.addEventListener('input', () => {
     fColorHex.value = fColor.value;
     updatePreview();
@@ -1154,7 +1175,9 @@
     el.addEventListener('input', updatePreview);
   });
 
-
+  // -------------------------------------------------------------------
+  // Live Discord-style preview
+  // -------------------------------------------------------------------
   function updatePreview() {
     updateCharCounts();
 
@@ -1207,7 +1230,9 @@
     });
   }
 
-
+  // -------------------------------------------------------------------
+  // Reset / prefill the form
+  // -------------------------------------------------------------------
   function resetForm(keepTargetUser) {
     if (!keepTargetUser) fTargetUser.value = '';
     fTitle.value = '';
@@ -1236,7 +1261,9 @@
     submitSuccess.textContent = '';
   });
 
-
+  // -------------------------------------------------------------------
+  // Submit feedback (create or edit, depending on editState)
+  // -------------------------------------------------------------------
   submitBtn.addEventListener('click', async () => {
     submitError.textContent = '';
     submitSuccess.textContent = '';
@@ -1310,7 +1337,9 @@
     }
   });
 
-
+  // -------------------------------------------------------------------
+  // Manage view: list users
+  // -------------------------------------------------------------------
   async function loadUsersList() {
     usersList.innerHTML = '<div class="manage-empty">Loading...</div>';
     try {
@@ -1341,7 +1370,9 @@
     }
   }
 
-
+  // -------------------------------------------------------------------
+  // Manage view: list one user's feedbacks
+  // -------------------------------------------------------------------
   async function loadUserFeedbacks(userId) {
     manageState.selectedUserId = userId;
     feedbacksTitle.textContent = `Feedbacks for ${userId}`;
@@ -1509,6 +1540,9 @@
   renderFieldRows();
   updatePreview();
 
+  // =====================================================================
+  // CALENDAR (QD / DS / GD / SG trainings)
+  // =====================================================================
 
   const tType = document.getElementById('t-type');
   const tSubtypeWrap = document.getElementById('t-subtype-wrap');
