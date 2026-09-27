@@ -231,6 +231,14 @@
   .tabs button.active { background: var(--accent); color: white; }
   .tabs button.active:hover { background: var(--accent); }
 
+  body.calendar-portal #tab-submit-btn,
+  body.calendar-portal #tab-manage-btn,
+  body.calendar-portal .tabs,
+  body.calendar-portal #view-submit,
+  body.calendar-portal #view-manage,
+  body:not(.calendar-portal) #tab-calendar-btn,
+  body:not(.calendar-portal) #view-calendar { display: none !important; }
+
   .topbar-actions { display: flex; align-items: center; gap: 8px; }
 
   /* ---------- Submit view ---------- */
@@ -793,6 +801,7 @@
           <div>
             <label for="t-start">Start time</label>
             <input type="datetime-local" id="t-start">
+            <div class="hint">All times are GMT+00.</div>
           </div>
           <div>
             <label for="t-duration">Duration (minutes)</label>
@@ -838,9 +847,10 @@
 <script>
 
   const API_BASE_URL = "https://feedback.wispbyte.app";
+  const PORTAL_SCOPE = window.location.pathname.replace(/\/+$/, '') === '/calendar' ? 'calendar' : 'feedback';
+  document.body.classList.toggle('calendar-portal', PORTAL_SCOPE === 'calendar');
 
 
-  const ORG_NAME = "SCRTH";
   const ORG_LOGO_URL = "https://images-ext-1.discordapp.net/external/XIGW6-AkXgL-zKJ_PazqP3YEymlPN2k58WCnh7IZr3c/https/message.style/cdn/images/fde4f74bac334b68717dabf56c3a1e40126b37e0a6cb617ad4eac33b327ba5ea.png?format=webp&quality=lossless";
 
   const TRAINING_TYPE_META = {
@@ -869,10 +879,13 @@
 
   document.getElementById('login-logo-slot').innerHTML = renderLogo(120);
   document.getElementById('topbar-logo-slot').innerHTML = renderLogo(100);
-  document.getElementById('login-org-subtitle').textContent = `Log in to save a feedback embed for a ${ORG_NAME} member. (Access is only authorised for MG+)`;
-  document.getElementById('topbar-title').textContent = `${ORG_NAME} Feedback Portal`;
+  document.querySelector('#login-screen h1').textContent = PORTAL_SCOPE === 'calendar' ? `${ORG_NAME} Calendar` : 'Feedback Portal';
+  document.getElementById('login-org-subtitle').textContent = PORTAL_SCOPE === 'calendar'
+    ? `Log in to manage the ${ORG_NAME} training calendar.`
+    : `Log in to save a feedback embed for a ${ORG_NAME} member. (Access is only authorised for MG+)`;
+  document.getElementById('topbar-title').textContent = PORTAL_SCOPE === 'calendar' ? `${ORG_NAME} Calendar` : `${ORG_NAME} Feedback Portal`;
   document.getElementById('topbar-org-name').textContent = ORG_NAME;
-  document.title = `${ORG_NAME} — Feedback Portal`;
+  document.title = PORTAL_SCOPE === 'calendar' ? `${ORG_NAME} — Calendar` : `${ORG_NAME} — Feedback Portal`;
   if (ORG_LOGO_URL) {
     const favicon = document.createElement('link');
     favicon.rel = 'icon';
@@ -920,14 +933,15 @@
   const feedbacksTitle = document.getElementById('feedbacks-title');
   const feedbacksList = document.getElementById('feedbacks-list');
 
-  let extraFields = []; 
-  let editState = null; 
+  let extraFields = []; // { name, value, inline }
+  let editState = null; // { userId, index } when editing an existing feedback
   let manageState = { selectedUserId: null, feedbacks: [] };
 
 
-  function getToken() { return localStorage.getItem('feedback_token'); }
-  function setToken(t) { localStorage.setItem('feedback_token', t); }
-  function clearToken() { localStorage.removeItem('feedback_token'); }
+  function tokenKey() { return `staff_portal_token_${PORTAL_SCOPE}`; }
+  function getToken() { return localStorage.getItem(tokenKey()); }
+  function setToken(t) { localStorage.setItem(tokenKey(), t); }
+  function clearToken() { localStorage.removeItem(tokenKey()); }
   function authHeaders() {
     return { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` };
   }
@@ -935,13 +949,33 @@
   function showApp() {
     loginScreenWrap.classList.add('hidden');
     appScreen.classList.remove('hidden');
+    if (PORTAL_SCOPE === 'calendar') {
+      viewCalendar.classList.remove('hidden');
+      loadTrainingsList();
+      loadQueueCounts();
+    } else {
+      viewSubmit.classList.remove('hidden');
+      viewManage.classList.add('hidden');
+      viewCalendar.classList.add('hidden');
+    }
   }
   function showLogin() {
     appScreen.classList.add('hidden');
     loginScreenWrap.classList.remove('hidden');
   }
 
-  if (getToken()) showApp();
+  async function restoreSession() {
+    if (!getToken()) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/session`, { headers: authHeaders() });
+      const data = await res.json();
+      if (res.ok && data.permissions?.[PORTAL_SCOPE]) showApp();
+      else clearToken();
+    } catch (err) {
+      clearToken();
+    }
+  }
+  restoreSession();
 
 
   loginBtn.addEventListener('click', async () => {
@@ -955,6 +989,7 @@
         body: JSON.stringify({
           username: loginUsername.value.trim(),
           password: loginPassword.value,
+          scope: PORTAL_SCOPE,
         }),
       });
 
@@ -1025,6 +1060,7 @@
     setCharCount('count-author', fAuthor.value.length, 256);
     setCharCount('count-footer', fFooter.value.length, 2048);
   }
+
 
   function renderFieldRows() {
     fieldsContainer.innerHTML = '';
@@ -1265,7 +1301,7 @@
         switchTab('manage');
         loadUserFeedbacks(finishedUserId);
       } else {
-        resetForm(true); 
+        resetForm(true); // keep target user ID in case you're adding several
       }
     } catch (err) {
       submitError.textContent = "Could not reach the server.";
@@ -1311,7 +1347,7 @@
     feedbacksTitle.textContent = `Feedbacks for ${userId}`;
     feedbacksList.innerHTML = '<div class="manage-empty">Loading...</div>';
 
-
+    // Re-render the user list so the active row is highlighted
     loadUsersList();
 
     try {
@@ -1474,7 +1510,6 @@
   updatePreview();
 
 
-
   const tType = document.getElementById('t-type');
   const tSubtypeWrap = document.getElementById('t-subtype-wrap');
   const tSubtype = document.getElementById('t-subtype');
@@ -1497,8 +1532,8 @@
   const trainingsListEl = document.getElementById('trainings-list');
   const trainingFilterRow = document.getElementById('training-filter-row');
 
-  let cohostIds = [''];
-  let trainingEditId = null; 
+  let cohostIds = ['']; // list of raw input strings
+  let trainingEditId = null; // id of the training being edited, or null
   let allTrainings = [];
   let activeTypeFilter = 'ALL';
 
@@ -1568,7 +1603,11 @@
   function toDatetimeLocalValue(isoString) {
     const d = new Date(isoString);
     const pad = (n) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+  }
+
+  function datetimeLocalAsUtc(value) {
+    return new Date(`${value}:00Z`).toISOString();
   }
 
   trainingSubmitBtn.addEventListener('click', async () => {
@@ -1606,7 +1645,7 @@
       subtype: tType.value === 'SG' ? tSubtype.value : undefined,
       hostId: tHost.value.trim(),
       cohostIds: cleanCohosts,
-      startTime: new Date(tStart.value).toISOString(),
+      startTime: datetimeLocalAsUtc(tStart.value),
       durationMinutes: duration,
       note: tNote.value || undefined,
     };
@@ -1726,7 +1765,7 @@
         <div class="training-card-top">
           <div style="min-width:0;">
             <div class="training-type-badge">${meta.emoji} ${escapeHtml(meta.label)}${training.subtype ? ' — ' + escapeHtml(training.subtype) : ''}</div>
-            <div class="tc-when">${start.toLocaleString()} → ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+            <div class="tc-when">${start.toLocaleString('en-GB', { timeZone: 'UTC' })} GMT+00 → ${end.toLocaleTimeString('en-GB', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' })} GMT+00</div>
             <div class="tc-meta">Host: <code>${escapeHtml(training.hostId)}</code> · Co-hosts: <code>${escapeHtml(cohosts)}</code> · ${training.durationMinutes} min</div>
             ${training.note ? `<div class="tc-note">${escapeHtml(training.note)}</div>` : ''}
           </div>
