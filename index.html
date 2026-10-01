@@ -233,11 +233,14 @@
 
   body.calendar-portal #tab-submit-btn,
   body.calendar-portal #tab-manage-btn,
-  body.calendar-portal .tabs,
   body.calendar-portal #view-submit,
   body.calendar-portal #view-manage,
   body:not(.calendar-portal) #tab-calendar-btn,
   body:not(.calendar-portal) #view-calendar { display: none !important; }
+
+  body.calendar-portal .tabs { display: flex; }
+  body:not(.calendar-portal) #tab-sessions-btn,
+  body:not(.calendar-portal) #view-sessions { display: none !important; }
 
   .topbar-actions { display: flex; align-items: center; gap: 8px; }
 
@@ -623,6 +626,27 @@
     font-size: 12px;
   }
   .type-filter-row button.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  .sessions-layout { display: grid; gap: 16px; }
+  .session-card { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 16px; }
+  .session-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .session-heading h3 { margin: 0; font-size: 16px; }
+  .session-meta { color: var(--muted); font-size: 13px; margin-top: 5px; }
+  .session-add-trainee { display: flex; gap: 8px; align-items: flex-start; margin: 16px 0; }
+  .session-add-trainee input { margin: 0; }
+  .trainee-assessment { border-top: 1px solid var(--border); padding: 14px 0; }
+  .trainee-assessment strong { display: block; margin-bottom: 10px; }
+  .trainee-assessment-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .trainee-assessment-controls select,
+  .trainee-assessment-controls input { margin: 0; }
+  .trainee-assessment .trainee-reason { margin-top: 8px; }
+  .trainee-assessment .trainee-save { margin-top: 8px; }
+  @media (max-width: 560px) {
+    .session-add-trainee { flex-direction: column; }
+    .session-add-trainee button { width: 100%; }
+    .trainee-assessment-controls { grid-template-columns: 1fr; }
+    .session-heading { flex-direction: column; }
+  }
 </style>
 </head>
 <body>
@@ -661,6 +685,7 @@
         <button id="tab-submit-btn" class="active">Submit feedback</button>
         <button id="tab-manage-btn">Manage feedbacks</button>
         <button id="tab-calendar-btn">Calendar</button>
+        <button id="tab-sessions-btn">Sessions</button>
       </div>
 
       <div class="topbar-actions">
@@ -800,8 +825,8 @@
         <div class="row-2">
           <div>
             <label for="t-start">Start time</label>
-            <input type="datetime-local" id="t-start">
-            <div class="hint">All times are GMT+00.</div>
+            <input type="text" id="t-start" placeholder="DD/MM/YYYY HH:mm" inputmode="numeric" autocomplete="off">
+            <div class="hint">DD/MM/YYYY HH:mm · GMT+00</div>
           </div>
           <div>
             <label for="t-duration">Duration (minutes)</label>
@@ -840,6 +865,20 @@
         <div id="trainings-list"></div>
       </div>
     </div>
+
+    <!-- ---------- TRAINING SESSIONS VIEW ---------- -->
+    <div class="sessions-layout hidden" id="view-sessions">
+      <div class="panel">
+        <div class="session-heading">
+          <div>
+            <h2>Training sessions</h2>
+            <div class="hint">Manage trainees and record each assessment.</div>
+          </div>
+          <button class="secondary icon-btn" id="sessions-refresh-btn" type="button" title="Refresh sessions">Refresh</button>
+        </div>
+        <div id="sessions-list"><div class="manage-empty">Loading...</div></div>
+      </div>
+    </div>
   </div>
 
 <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
@@ -848,7 +887,7 @@
   // -------------------------------------------------------------------
   // CONFIG
   // -------------------------------------------------------------------
-  const API_BASE_URL = "https://feedback.wispbyte.app";
+  const API_BASE_URL = "";
   const portalPath = window.location.pathname.replace(/\/+$/, '');
   const portalQuery = new URLSearchParams(window.location.search).get('portal');
   const PORTAL_SCOPE = portalQuery === 'calendar' || portalPath === '/calendar' || portalPath.endsWith('/calendar')
@@ -919,9 +958,11 @@
   const tabSubmitBtn = document.getElementById('tab-submit-btn');
   const tabManageBtn = document.getElementById('tab-manage-btn');
   const tabCalendarBtn = document.getElementById('tab-calendar-btn');
+  const tabSessionsBtn = document.getElementById('tab-sessions-btn');
   const viewSubmit = document.getElementById('view-submit');
   const viewManage = document.getElementById('view-manage');
   const viewCalendar = document.getElementById('view-calendar');
+  const viewSessions = document.getElementById('view-sessions');
 
   const fTargetUser = document.getElementById('f-target-user');
   const fTitle = document.getElementById('f-title');
@@ -965,9 +1006,7 @@
     loginScreenWrap.classList.add('hidden');
     appScreen.classList.remove('hidden');
     if (PORTAL_SCOPE === 'calendar') {
-      viewCalendar.classList.remove('hidden');
-      loadTrainingsList();
-      loadQueueCounts();
+      switchTab('calendar');
     } else {
       viewSubmit.classList.remove('hidden');
       viewManage.classList.add('hidden');
@@ -1046,24 +1085,29 @@
     const isSubmit = tab === 'submit';
     const isManage = tab === 'manage';
     const isCalendar = tab === 'calendar';
+    const isSessions = tab === 'sessions';
 
     viewSubmit.classList.toggle('hidden', !isSubmit);
     viewManage.classList.toggle('hidden', !isManage);
     viewCalendar.classList.toggle('hidden', !isCalendar);
+    viewSessions.classList.toggle('hidden', !isSessions);
 
     tabSubmitBtn.classList.toggle('active', isSubmit);
     tabManageBtn.classList.toggle('active', isManage);
     tabCalendarBtn.classList.toggle('active', isCalendar);
+    tabSessionsBtn.classList.toggle('active', isSessions);
 
     if (isManage) loadUsersList();
     if (isCalendar) {
       loadTrainingsList();
       loadQueueCounts();
     }
+    if (isSessions) loadTrainingSessions();
   }
   tabSubmitBtn.addEventListener('click', () => switchTab('submit'));
   tabManageBtn.addEventListener('click', () => switchTab('manage'));
   tabCalendarBtn.addEventListener('click', () => switchTab('calendar'));
+  tabSessionsBtn.addEventListener('click', () => switchTab('sessions'));
 
   // -------------------------------------------------------------------
   // Character counters
@@ -1569,10 +1613,14 @@
   const queueSummary = document.getElementById('queue-summary');
   const trainingsListEl = document.getElementById('trainings-list');
   const trainingFilterRow = document.getElementById('training-filter-row');
+  const sessionsListEl = document.getElementById('sessions-list');
+  const sessionsRefreshBtn = document.getElementById('sessions-refresh-btn');
 
   let cohostIds = ['']; // list of raw input strings
   let trainingEditId = null; // id of the training being edited, or null
   let allTrainings = [];
+  let allTrainingSessions = [];
+  let trainingAssessors = [];
   let activeTypeFilter = 'ALL';
 
   function renderCohostRows() {
@@ -1638,14 +1686,28 @@
     trainingSuccess.textContent = '';
   });
 
-  function toDatetimeLocalValue(isoString) {
-    const d = new Date(isoString);
-    const pad = (n) => String(n).padStart(2, '0');
-    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+  function formatUtcDateTime(date) {
+    const pad = (value) => String(value).padStart(2, '0');
+    return `${pad(date.getUTCDate())}/${pad(date.getUTCMonth() + 1)}/${date.getUTCFullYear()} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}`;
   }
 
-  function datetimeLocalAsUtc(value) {
-    return new Date(`${value}:00Z`).toISOString();
+  function formatUtcTime(date) {
+    return `${String(date.getUTCHours()).padStart(2, '0')}:${String(date.getUTCMinutes()).padStart(2, '0')}`;
+  }
+
+  function toDateTimeInputValue(isoString) {
+    return formatUtcDateTime(new Date(isoString));
+  }
+
+  function parseGmtDateTime(value) {
+    const match = value.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})$/);
+    if (!match) return null;
+    const [, day, month, year, hour, minute] = match.map(Number);
+    const date = new Date(0);
+    date.setUTCFullYear(year, month - 1, day);
+    date.setUTCHours(hour, minute, 0, 0);
+    if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day || hour > 23 || minute > 59) return null;
+    return date.toISOString();
   }
 
   trainingSubmitBtn.addEventListener('click', async () => {
@@ -1665,8 +1727,9 @@
       }
     }
 
-    if (!tStart.value) {
-      trainingError.textContent = 'Pick a start time.';
+    const startTime = parseGmtDateTime(tStart.value.trim());
+    if (!startTime) {
+      trainingError.textContent = 'Enter a valid start time as DD/MM/YYYY HH:mm (GMT+00).';
       return;
     }
 
@@ -1683,7 +1746,7 @@
       subtype: tType.value === 'SG' ? tSubtype.value : undefined,
       hostId: tHost.value.trim(),
       cohostIds: cleanCohosts,
-      startTime: datetimeLocalAsUtc(tStart.value),
+      startTime,
       durationMinutes: duration,
       note: tNote.value || undefined,
     };
@@ -1771,6 +1834,7 @@
       }
 
       allTrainings = Array.isArray(data.trainings) ? data.trainings : [];
+      await loadTrainingSessionData();
       renderTrainingsList();
     } catch (err) {
       trainingsListEl.innerHTML = '<div class="manage-empty">Could not reach the server.</div>';
@@ -1796,6 +1860,7 @@
       const start = new Date(training.startTime);
       const end = new Date(start.getTime() + training.durationMinutes * 60000);
       const cohosts = (training.cohostIds || []).length ? training.cohostIds.join(', ') : 'no one';
+      const started = allTrainingSessions.some((session) => session.trainingId === training.id);
 
       const card = document.createElement('div');
       card.className = 'training-card';
@@ -1803,11 +1868,12 @@
         <div class="training-card-top">
           <div style="min-width:0;">
             <div class="training-type-badge">${meta.emoji} ${escapeHtml(meta.label)}${training.subtype ? ' — ' + escapeHtml(training.subtype) : ''}</div>
-            <div class="tc-when">${start.toLocaleString('en-GB', { timeZone: 'UTC' })} GMT+00 → ${end.toLocaleTimeString('en-GB', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit' })} GMT+00</div>
+            <div class="tc-when">${formatUtcDateTime(start)} GMT+00 → ${formatUtcTime(end)} GMT+00</div>
             <div class="tc-meta">Host: <code>${escapeHtml(training.hostId)}</code> · Co-hosts: <code>${escapeHtml(cohosts)}</code> · ${training.durationMinutes} min</div>
             ${training.note ? `<div class="tc-note">${escapeHtml(training.note)}</div>` : ''}
           </div>
           <div class="training-card-actions">
+            ${started ? '<button class="secondary icon-btn" disabled>Started</button>' : '<button class="icon-btn" data-action="start">Start</button>'}
             <button class="secondary icon-btn" data-action="edit">Edit</button>
             <button class="danger icon-btn" data-action="delete">Delete</button>
           </div>
@@ -1816,10 +1882,190 @@
 
       card.querySelector('[data-action="edit"]').addEventListener('click', () => startEditTraining(training));
       card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteTraining(training.id));
+      card.querySelector('[data-action="start"]')?.addEventListener('click', (event) => startTrainingSession(training.id, event.currentTarget));
 
       trainingsListEl.appendChild(card);
     });
   }
+
+  async function loadTrainingSessionData() {
+    const res = await fetch(`${API_BASE_URL}/api/training-sessions`, { headers: authHeaders() });
+    const data = await res.json();
+    if (res.status === 401) {
+      clearToken();
+      showLogin();
+      return;
+    }
+    if (!res.ok) throw new Error(data.error || 'Could not load training sessions.');
+    allTrainingSessions = Array.isArray(data.sessions) ? data.sessions : [];
+  }
+
+  async function startTrainingSession(trainingId, button) {
+    button.disabled = true;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/training-sessions`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ trainingId }),
+      });
+      const data = await res.json();
+      if (res.status === 401) {
+        clearToken();
+        showLogin();
+        return;
+      }
+      if (!res.ok) throw new Error(data.error || 'Could not start this training.');
+      await loadTrainingsList();
+      switchTab('sessions');
+    } catch (err) {
+      alert(err.message || 'Could not reach the server.');
+      button.disabled = false;
+    }
+  }
+
+  async function loadTrainingSessions() {
+    sessionsListEl.innerHTML = '<div class="manage-empty">Loading...</div>';
+    try {
+      await loadTrainingSessionData();
+      if (!trainingAssessors.length) {
+        const res = await fetch(`${API_BASE_URL}/api/training-sessions/assessors`, { headers: authHeaders() });
+        const data = await res.json();
+        if (res.status === 401) {
+          clearToken();
+          showLogin();
+          return;
+        }
+        if (!res.ok) throw new Error(data.error || 'Could not load assessors.');
+        trainingAssessors = Array.isArray(data.assessors) ? data.assessors : [];
+      }
+      renderTrainingSessions();
+      renderTrainingsList();
+    } catch (err) {
+      sessionsListEl.innerHTML = '<div class="manage-empty">Could not reach the server.</div>';
+    }
+  }
+
+  function renderTrainingSessions() {
+    const activeSessions = allTrainingSessions.filter((session) => session.status === 'active');
+    if (!activeSessions.length) {
+      sessionsListEl.innerHTML = '<div class="manage-empty">No active training sessions.</div>';
+      return;
+    }
+
+    sessionsListEl.innerHTML = '';
+    activeSessions.forEach((session) => {
+      const meta = TRAINING_TYPE_META[session.type] || { label: session.type, emoji: '⚪' };
+      const card = document.createElement('section');
+      card.className = 'session-card';
+      card.innerHTML = `
+        <div class="session-heading">
+          <div>
+            <h3>${meta.emoji} ${escapeHtml(meta.label)}${session.subtype ? ` — ${escapeHtml(session.subtype)}` : ''}</h3>
+            <div class="session-meta">Host: ${escapeHtml(session.hostId)} · Co-hosts: ${escapeHtml((session.cohostIds || []).join(', ') || 'none')} · Started ${formatUtcDateTime(new Date(session.startedAt))} GMT+00</div>
+          </div>
+          <button class="danger icon-btn" data-action="end" type="button">End training</button>
+        </div>
+        <form class="session-add-trainee">
+          <input type="text" name="username" maxlength="80" placeholder="Trainee username" aria-label="Trainee username" required>
+          <button type="submit">Add trainee</button>
+        </form>
+        <div class="session-trainees"></div>
+      `;
+      card.querySelector('.session-add-trainee').addEventListener('submit', (event) => {
+        event.preventDefault();
+        addSessionTrainee(session.id, event.currentTarget);
+      });
+      card.querySelector('[data-action="end"]').addEventListener('click', () => endTrainingSession(session.id));
+      const traineeList = card.querySelector('.session-trainees');
+      const trainees = Array.isArray(session.trainees) ? session.trainees : [];
+      if (!trainees.length) traineeList.innerHTML = '<div class="manage-empty">Add the trainees attending this session.</div>';
+      trainees.forEach((trainee) => traineeList.appendChild(renderTraineeAssessment(session.id, trainee)));
+      sessionsListEl.appendChild(card);
+    });
+  }
+
+  function renderTraineeAssessment(sessionId, trainee) {
+    const row = document.createElement('div');
+    row.className = 'trainee-assessment';
+    const statusOptions = ['afk', 'in progress', 'awaiting', 'passed', 'failed'];
+    row.innerHTML = `
+      <strong>${escapeHtml(trainee.username)}</strong>
+      <div class="trainee-assessment-controls">
+        <select aria-label="Assessment status">
+          ${statusOptions.map((status) => `<option value="${status}" ${trainee.status === status ? 'selected' : ''}>${status}</option>`).join('')}
+        </select>
+        <select aria-label="Assessor">
+          <option value="">Select assessor</option>
+          ${trainingAssessors.map((name) => `<option value="${escapeAttr(name)}" ${trainee.assessedBy === name ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}
+        </select>
+      </div>
+      <input class="trainee-reason" type="text" maxlength="500" value="${escapeAttr(trainee.reason || '')}" placeholder="Reason (required when failed)" aria-label="Assessment reason">
+      <button class="secondary icon-btn trainee-save" type="button">Save assessment</button>
+      <div class="error-msg"></div>
+    `;
+    row.querySelector('.trainee-save').addEventListener('click', () => saveTraineeAssessment(sessionId, trainee.id, row));
+    return row;
+  }
+
+  async function addSessionTrainee(sessionId, form) {
+    const input = form.elements.username;
+    const button = form.querySelector('button');
+    button.disabled = true;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/training-sessions/${sessionId}/trainees`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ username: input.value }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not add trainee.');
+      await loadTrainingSessions();
+    } catch (err) {
+      alert(err.message || 'Could not reach the server.');
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function saveTraineeAssessment(sessionId, traineeId, row) {
+    const [statusSelect, assessorSelect] = row.querySelectorAll('select');
+    const error = row.querySelector('.error-msg');
+    const button = row.querySelector('.trainee-save');
+    error.textContent = '';
+    button.disabled = true;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/training-sessions/${sessionId}/trainees/${traineeId}`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({ status: statusSelect.value, assessedBy: assessorSelect.value, reason: row.querySelector('.trainee-reason').value }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not save assessment.');
+      await loadTrainingSessions();
+    } catch (err) {
+      error.textContent = err.message || 'Could not reach the server.';
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function endTrainingSession(sessionId) {
+    if (!confirm('End this training and send its final log to Discord?')) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/training-sessions/${sessionId}/end`, {
+        method: 'POST',
+        headers: authHeaders(),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not end this training.');
+      await loadTrainingSessions();
+      await loadTrainingsList();
+    } catch (err) {
+      alert(err.message || 'Could not reach the server.');
+    }
+  }
+
+  sessionsRefreshBtn.addEventListener('click', loadTrainingSessions);
 
   function startEditTraining(training) {
     trainingEditId = training.id;
@@ -1830,7 +2076,7 @@
     tHost.value = training.hostId;
     cohostIds = (training.cohostIds || []).length ? [...training.cohostIds] : [''];
     renderCohostRows();
-    tStart.value = toDatetimeLocalValue(training.startTime);
+    tStart.value = toDateTimeInputValue(training.startTime);
     tDuration.value = training.durationMinutes;
     tNote.value = training.note || '';
 
