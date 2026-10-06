@@ -887,9 +887,7 @@
 <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
 <script>
-  // -------------------------------------------------------------------
-  // CONFIG
-  // -------------------------------------------------------------------
+
   const API_BASE_URL = "https://feedback.wispbyte.app";
   const portalPath = window.location.pathname.replace(/\/+$/, '');
   const portalQuery = new URLSearchParams(window.location.search).get('portal');
@@ -942,9 +940,7 @@
     document.head.appendChild(favicon);
   }
 
-  // -------------------------------------------------------------------
-  // Elements
-  // -------------------------------------------------------------------
+
   const loginScreenWrap = document.getElementById('login-screen-wrap');
   const appScreen = document.getElementById('app-screen');
 
@@ -990,9 +986,6 @@
   let editState = null; // { userId, index } when editing an existing feedback
   let manageState = { selectedUserId: null, feedbacks: [] };
 
-  // -------------------------------------------------------------------
-  // Session
-  // -------------------------------------------------------------------
   function tokenKey() { return `staff_portal_token_${PORTAL_SCOPE}`; }
   function getToken() { return localStorage.getItem(tokenKey()); }
   function setToken(t) { localStorage.setItem(tokenKey(), t); }
