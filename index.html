@@ -634,17 +634,20 @@
   .session-meta { color: var(--muted); font-size: 13px; margin-top: 5px; }
   .session-add-trainee { display: flex; gap: 8px; align-items: flex-start; margin: 16px 0; }
   .session-add-trainee input { margin: 0; }
-  .trainee-assessment { border-top: 1px solid var(--border); padding: 14px 0; }
-  .trainee-assessment strong { display: block; margin-bottom: 10px; }
-  .trainee-assessment-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .trainee-assessment-controls select,
-  .trainee-assessment-controls input { margin: 0; }
-  .trainee-assessment .trainee-reason { margin-top: 8px; }
-  .trainee-assessment .trainee-save { margin-top: 8px; }
+  .session-table-wrap { overflow-x: auto; }
+  .session-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .session-table th,
+  .session-table td { padding: 10px 8px; border-top: 1px solid var(--border); text-align: left; vertical-align: middle; }
+  .session-table th { color: var(--muted); font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .session-table td:first-child { min-width: 140px; }
+  .session-table select,
+  .session-table input { min-width: 130px; margin: 0; }
+  .session-table .trainee-reason { min-width: 180px; }
+  .session-table .trainee-save { white-space: nowrap; }
+  .session-table .error-msg { margin: 6px 0 0; }
   @media (max-width: 560px) {
     .session-add-trainee { flex-direction: column; }
     .session-add-trainee button { width: 100%; }
-    .trainee-assessment-controls { grid-template-columns: 1fr; }
     .session-heading { flex-direction: column; }
   }
 </style>
@@ -895,9 +898,7 @@
     : 'feedback';
   document.body.classList.toggle('calendar-portal', PORTAL_SCOPE === 'calendar');
 
-  // Fill these in to brand the site with your organization's identity.
-  // ORG_LOGO_URL: a direct link to your logo image (square works best).
-  // Leave it empty ("") to show an auto-generated placeholder badge instead.
+
   const ORG_NAME = "SCRTH";
   const ORG_LOGO_URL = "https://images-ext-1.discordapp.net/external/XIGW6-AkXgL-zKJ_PazqP3YEymlPN2k58WCnh7IZr3c/https/message.style/cdn/images/fde4f74bac334b68717dabf56c3a1e40126b37e0a6cb617ad4eac33b327ba5ea.png?format=webp&quality=lossless";
 
@@ -908,9 +909,7 @@
     SG: { label: 'SG — Signaller', emoji: '🟢' }
   };
 
-  // -------------------------------------------------------------------
-  // Branding: inject logo (or placeholder) wherever it's needed
-  // -------------------------------------------------------------------
+
   function initials(name) {
     return name
       .split(/\s+/)
@@ -1969,7 +1968,20 @@
           <input type="text" name="username" maxlength="80" placeholder="Trainee username" aria-label="Trainee username" required>
           <button type="submit">Add trainee</button>
         </form>
-        <div class="session-trainees"></div>
+        <div class="session-table-wrap">
+          <table class="session-table">
+            <thead>
+              <tr>
+                <th scope="col">Trainee</th>
+                <th scope="col">Status</th>
+                <th scope="col">Assessor</th>
+                <th scope="col">Reason</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody class="session-trainees"></tbody>
+          </table>
+        </div>
       `;
       card.querySelector('.session-add-trainee').addEventListener('submit', (event) => {
         event.preventDefault();
@@ -1978,30 +1990,34 @@
       card.querySelector('[data-action="end"]').addEventListener('click', () => endTrainingSession(session.id));
       const traineeList = card.querySelector('.session-trainees');
       const trainees = Array.isArray(session.trainees) ? session.trainees : [];
-      if (!trainees.length) traineeList.innerHTML = '<div class="manage-empty">Add the trainees attending this session.</div>';
+      if (!trainees.length) traineeList.innerHTML = '<tr><td class="manage-empty" colspan="5">Add the trainees attending this session.</td></tr>';
       trainees.forEach((trainee) => traineeList.appendChild(renderTraineeAssessment(session.id, trainee)));
       sessionsListEl.appendChild(card);
     });
   }
 
   function renderTraineeAssessment(sessionId, trainee) {
-    const row = document.createElement('div');
+    const row = document.createElement('tr');
     row.className = 'trainee-assessment';
-    const statusOptions = ['afk', 'in progress', 'awaiting', 'passed', 'failed'];
+    const statusOptions = ['awaiting', 'passed', 'failed'];
     row.innerHTML = `
-      <strong>${escapeHtml(trainee.username)}</strong>
-      <div class="trainee-assessment-controls">
+      <td><strong>${escapeHtml(trainee.username)}</strong></td>
+      <td>
         <select aria-label="Assessment status">
           ${statusOptions.map((status) => `<option value="${status}" ${trainee.status === status ? 'selected' : ''}>${status}</option>`).join('')}
         </select>
+      </td>
+      <td>
         <select aria-label="Assessor">
           <option value="">Select assessor</option>
           ${trainingAssessors.map((name) => `<option value="${escapeAttr(name)}" ${trainee.assessedBy === name ? 'selected' : ''}>${escapeHtml(name)}</option>`).join('')}
         </select>
-      </div>
-      <input class="trainee-reason" type="text" maxlength="500" value="${escapeAttr(trainee.reason || '')}" placeholder="Reason (required when failed)" aria-label="Assessment reason">
-      <button class="secondary icon-btn trainee-save" type="button">Save assessment</button>
-      <div class="error-msg"></div>
+      </td>
+      <td><input class="trainee-reason" type="text" maxlength="500" value="${escapeAttr(trainee.reason || '')}" placeholder="Reason (required when failed)" aria-label="Assessment reason"></td>
+      <td>
+        <button class="secondary icon-btn trainee-save" type="button">Save</button>
+        <div class="error-msg"></div>
+      </td>
     `;
     row.querySelector('.trainee-save').addEventListener('click', () => saveTraineeAssessment(sessionId, trainee.id, row));
     return row;
