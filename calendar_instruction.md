@@ -1,5 +1,5 @@
 # SCRTH CALENDAR SYSTEM INSTRUCTION[^1]
-> [!CAUTION]
+> [!NOTE]
 > 
 > Over the last tests, the calendar system encountered some bugs eg: not responding properly, please always double check when making an event to try not to always delete the event.
 
@@ -24,6 +24,28 @@
 >
 > **White**  : Upcoming training select view, by default it's `All`.
 
+
+# MANAGING SESSIONS WITH INTEGRATED TCS
+<img width="1362" height="672" alt="image" src="https://github.com/user-attachments/assets/788c6613-ec86-403c-9f91-172fbc35b1d3" />
+
+
+> **Pink** : The button to end the training, please only click when you know that it's 100% finished.
+>
+> **Maroon** : Enter the trainee username and click on the button to add them.
+>
+> **Red** : Trainees usernames ex : `le_toaster`.
+>
+> **Yellow** : The trainee status, there is `awaiting` & `passed` & `failed`.
+>
+> **Blue** : The trainee assessor, I won't list all of them but there is all of the current SV+.
+>
+> **Green** : The failed raison of the trainee.
+>
+> **Purple** : Click here to save what you did on a trainee ex : setting it status or it's assessor.
+
+> [!IMPORTANT]
+>
+> Always **SAVE** after doing actions with the trainees, you can only save a trainee at a time. 
 
 > [!TIP]
 > DeadsLights tip:
