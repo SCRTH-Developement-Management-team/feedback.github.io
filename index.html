@@ -634,6 +634,9 @@
   .session-meta { color: var(--muted); font-size: 13px; margin-top: 5px; }
   .session-add-trainee { display: flex; gap: 8px; align-items: flex-start; margin: 16px 0; }
   .session-add-trainee input { margin: 0; }
+  .session-screenshot { display: flex; align-items: flex-end; gap: 8px; margin: 16px 0; }
+  .session-screenshot input { margin: 0; }
+  .session-screenshot-status { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
   .session-table-wrap { overflow-x: auto; }
   .session-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
   .session-table th,
@@ -644,10 +647,13 @@
   .session-table input { min-width: 130px; margin: 0; }
   .session-table .trainee-reason { min-width: 180px; }
   .session-table .trainee-save { white-space: nowrap; }
+  .session-table .trainee-remove { white-space: nowrap; margin-left: 6px; }
   .session-table .error-msg { margin: 6px 0 0; }
   @media (max-width: 560px) {
     .session-add-trainee { flex-direction: column; }
     .session-add-trainee button { width: 100%; }
+    .session-screenshot { align-items: stretch; flex-direction: column; }
+    .session-screenshot button { width: 100%; }
     .session-heading { flex-direction: column; }
   }
 </style>
@@ -837,8 +843,12 @@
           </div>
         </div>
 
-        <label for="t-note">Note (optional)</label>
+        <label for="t-note">Trainer note (optional)</label>
         <textarea id="t-note" maxlength="300" placeholder="e.g. Meet at the depot, bring your controller..."></textarea>
+
+        <label for="t-private-server-link">Private server link</label>
+        <input type="url" id="t-private-server-link" maxlength="500" placeholder="https://..." required>
+        <div class="hint">This link is added to the Discord training announcement when the training starts.</div>
 
         <div class="error-msg" id="training-error"></div>
         <div class="success-msg" id="training-success"></div>
@@ -887,7 +897,9 @@
 <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
 <script>
-
+  // -------------------------------------------------------------------
+  // CONFIG
+  // -------------------------------------------------------------------
   const API_BASE_URL = "https://feedback.wispbyte.app";
   const portalPath = window.location.pathname.replace(/\/+$/, '');
   const portalQuery = new URLSearchParams(window.location.search).get('portal');
@@ -896,7 +908,9 @@
     : 'feedback';
   document.body.classList.toggle('calendar-portal', PORTAL_SCOPE === 'calendar');
 
-
+  // Fill these in to brand the site with your organization's identity.
+  // ORG_LOGO_URL: a direct link to your logo image (square works best).
+  // Leave it empty ("") to show an auto-generated placeholder badge instead.
   const ORG_NAME = "SCRTH";
   const ORG_LOGO_URL = "https://images-ext-1.discordapp.net/external/XIGW6-AkXgL-zKJ_PazqP3YEymlPN2k58WCnh7IZr3c/https/message.style/cdn/images/fde4f74bac334b68717dabf56c3a1e40126b37e0a6cb617ad4eac33b327ba5ea.png?format=webp&quality=lossless";
 
@@ -907,7 +921,9 @@
     SG: { label: 'SG — Signaller', emoji: '🟢' }
   };
 
-
+  // -------------------------------------------------------------------
+  // Branding: inject logo (or placeholder) wherever it's needed
+  // -------------------------------------------------------------------
   function initials(name) {
     return name
       .split(/\s+/)
@@ -940,7 +956,9 @@
     document.head.appendChild(favicon);
   }
 
-
+  // -------------------------------------------------------------------
+  // Elements
+  // -------------------------------------------------------------------
   const loginScreenWrap = document.getElementById('login-screen-wrap');
   const appScreen = document.getElementById('app-screen');
 
@@ -986,6 +1004,9 @@
   let editState = null; // { userId, index } when editing an existing feedback
   let manageState = { selectedUserId: null, feedbacks: [] };
 
+  // -------------------------------------------------------------------
+  // Session
+  // -------------------------------------------------------------------
   function tokenKey() { return `staff_portal_token_${PORTAL_SCOPE}`; }
   function getToken() { return localStorage.getItem(tokenKey()); }
   function setToken(t) { localStorage.setItem(tokenKey(), t); }
@@ -1593,6 +1614,7 @@
   const tStart = document.getElementById('t-start');
   const tDuration = document.getElementById('t-duration');
   const tNote = document.getElementById('t-note');
+  const tPrivateServerLink = document.getElementById('t-private-server-link');
 
   const trainingSubmitBtn = document.getElementById('training-submit-btn');
   const trainingError = document.getElementById('training-error');
@@ -1662,6 +1684,7 @@
     tStart.value = '';
     tDuration.value = 60;
     tNote.value = '';
+    tPrivateServerLink.value = '';
   }
 
   function setTrainingEditModeUI(isEditing, label) {
@@ -1711,6 +1734,12 @@
       return;
     }
 
+    if (!tPrivateServerLink.value.trim()) {
+      trainingError.textContent = 'Enter the private training server link.';
+      tPrivateServerLink.focus();
+      return;
+    }
+
     const cleanCohosts = cohostIds.map((v) => v.trim()).filter(Boolean);
     for (const id of cleanCohosts) {
       if (!/^\d{15,25}$/.test(id)) {
@@ -1741,6 +1770,7 @@
       startTime,
       durationMinutes: duration,
       note: tNote.value || undefined,
+      privateServerLink: tPrivateServerLink.value.trim() || undefined,
     };
 
     const isEditing = Boolean(trainingEditId);
@@ -1852,7 +1882,7 @@
       const start = new Date(training.startTime);
       const end = new Date(start.getTime() + training.durationMinutes * 60000);
       const cohosts = (training.cohostIds || []).length ? training.cohostIds.join(', ') : 'no one';
-      const started = allTrainingSessions.some((session) => session.trainingId === training.id);
+      const started = allTrainingSessions.some((session) => session.trainingId === training.id && session.status !== 'scheduled');
 
       const card = document.createElement('div');
       card.className = 'training-card';
@@ -1961,6 +1991,14 @@
           <input type="text" name="username" maxlength="80" placeholder="Trainee username" aria-label="Trainee username" required>
           <button type="submit">Add trainee</button>
         </form>
+        <form class="session-screenshot">
+          <div>
+            <label>Final training screenshot</label>
+            <input type="file" name="screenshot" accept="image/png,image/jpeg,image/gif,image/webp" required>
+            <div class="session-screenshot-status">${session.screenshotFileName ? 'Screenshot ready for the final log.' : 'No screenshot uploaded yet.'}</div>
+          </div>
+          <button type="submit">${session.screenshotFileName ? 'Replace screenshot' : 'Upload screenshot'}</button>
+        </form>
         <div class="session-table-wrap">
           <table class="session-table">
             <thead>
@@ -1969,7 +2007,7 @@
                 <th scope="col">Status</th>
                 <th scope="col">Assessor</th>
                 <th scope="col">Reason</th>
-                <th scope="col">Action</th>
+                <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody class="session-trainees"></tbody>
@@ -1979,6 +2017,10 @@
       card.querySelector('.session-add-trainee').addEventListener('submit', (event) => {
         event.preventDefault();
         addSessionTrainee(session.id, event.currentTarget);
+      });
+      card.querySelector('.session-screenshot').addEventListener('submit', (event) => {
+        event.preventDefault();
+        uploadTrainingScreenshot(session.id, event.currentTarget);
       });
       card.querySelector('[data-action="end"]').addEventListener('click', () => endTrainingSession(session.id));
       const traineeList = card.querySelector('.session-trainees');
@@ -2009,11 +2051,49 @@
       <td><input class="trainee-reason" type="text" maxlength="500" value="${escapeAttr(trainee.reason || '')}" placeholder="Reason (required when failed)" aria-label="Assessment reason"></td>
       <td>
         <button class="secondary icon-btn trainee-save" type="button">Save</button>
+        <button class="danger icon-btn trainee-remove" type="button">Remove</button>
         <div class="error-msg"></div>
       </td>
     `;
     row.querySelector('.trainee-save').addEventListener('click', () => saveTraineeAssessment(sessionId, trainee.id, row));
+    row.querySelector('.trainee-remove').addEventListener('click', () => removeSessionTrainee(sessionId, trainee.id));
     return row;
+  }
+
+  async function uploadTrainingScreenshot(sessionId, form) {
+    const file = form.elements.screenshot.files[0];
+    const button = form.querySelector('button');
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+      alert('The screenshot must be smaller than 8 MB.');
+      return;
+    }
+    button.disabled = true;
+    try {
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Could not read the selected screenshot.'));
+        reader.readAsDataURL(file);
+      });
+      const res = await fetch(`${API_BASE_URL}/api/training-sessions/${sessionId}/screenshot`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ dataUrl }),
+      });
+      const data = await res.json();
+      if (res.status === 401) {
+        clearToken();
+        showLogin();
+        return;
+      }
+      if (!res.ok) throw new Error(data.error || 'Could not upload the screenshot.');
+      await loadTrainingSessions();
+    } catch (err) {
+      alert(err.message || 'Could not reach the server.');
+    } finally {
+      button.disabled = false;
+    }
   }
 
   async function addSessionTrainee(sessionId, form) {
@@ -2058,6 +2138,26 @@
     }
   }
 
+  async function removeSessionTrainee(sessionId, traineeId) {
+    if (!confirm('Remove this trainee from the session?')) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/training-sessions/${sessionId}/trainees/${traineeId}`, {
+        method: 'DELETE',
+        headers: authHeaders(),
+      });
+      const data = await res.json();
+      if (res.status === 401) {
+        clearToken();
+        showLogin();
+        return;
+      }
+      if (!res.ok) throw new Error(data.error || 'Could not remove this trainee.');
+      await loadTrainingSessions();
+    } catch (err) {
+      alert(err.message || 'Could not reach the server.');
+    }
+  }
+
   async function endTrainingSession(sessionId) {
     if (!confirm('End this training and send its final log to Discord?')) return;
     try {
@@ -2088,6 +2188,7 @@
     tStart.value = toDateTimeInputValue(training.startTime);
     tDuration.value = training.durationMinutes;
     tNote.value = training.note || '';
+    tPrivateServerLink.value = training.privateServerLink || '';
 
     trainingError.textContent = '';
     trainingSuccess.textContent = '';
