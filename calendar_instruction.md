@@ -1,9 +1,4 @@
 # SCRTH CALENDAR SYSTEM INSTRUCTION[^1]
-> [!NOTE]
-> 
-> Over the last tests, the calendar system encountered some bugs eg: not responding properly, please always double check when making an event to try not to always delete the event.
-
-
 <img width="1385" height="842" alt="image" src="https://github.com/user-attachments/assets/8691b511-9210-4fef-a575-3436c696d622" />
 
 > **Green** : Training type `QD/DS/GD/SG`.
@@ -43,13 +38,15 @@
 >
 > **Purple** : Click here to save what you did on a trainee ex : setting it status or it's assessor.
 
+> [!NOTE]
+> We added a `remove` button to remove the trainee, this button is not on the picture but it's located near the `save` button.
+>
+> When users click on the `sign up` button, they are directly registered in the session database which mean that you do not have to write their name. However, if they **fail to attend the training**, please mark them as failed and put as the reason : `FAILED TO ATTEND`. It will one day be logged and actions would be taken.
+
+
 > [!IMPORTANT]
 >
 > Always **SAVE** after doing actions with the trainees, you can only save a trainee at a time. 
 
-> [!TIP]
-> DeadsLights tip:
->
-> Always log-out and log-in when going on the site, it shows that you're connected but you're not. The session token expires after `1h`. 
 
 [^1]: portal link https://scrth-developement-management-team.github.io/feedback.github.io/?portal=calendar
