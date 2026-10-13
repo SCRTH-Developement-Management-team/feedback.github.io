@@ -104,6 +104,43 @@
     margin: -10px 0 16px;
   }
 
+  .emoji-tools { position: relative; margin: -8px 0 16px; }
+  .emoji-tools > button { padding: 6px 10px; font-size: 12px; }
+  .emoji-picker {
+    position: absolute;
+    z-index: 5;
+    top: calc(100% + 6px);
+    left: 0;
+    width: min(100%, 360px);
+    padding: 12px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+  }
+  .emoji-picker input { margin: 10px 0; }
+  .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+    gap: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .emoji-grid button {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 4px;
+    background: transparent;
+    border: 1px solid transparent;
+  }
+  .emoji-grid button:hover { background: var(--panel-2); border-color: var(--border); }
+  .emoji-grid img { width: 28px; height: 28px; object-fit: contain; }
+  .emoji-picker-status { color: var(--muted); font-size: 12px; padding: 8px 2px; }
+  .emoji-picker-status.limit-warning { grid-column: 1 / -1; color: var(--danger); }
+  .preview-emoji { width: 1.375em; height: 1.375em; object-fit: contain; vertical-align: -0.3em; }
+
   button {
     cursor: pointer;
     border: none;
@@ -746,6 +783,14 @@
 
         <label for="f-description">Description <span class="char-count" id="count-description">0/4096</span></label>
         <textarea id="f-description" maxlength="4096" placeholder="Write the feedback here..."></textarea>
+        <div class="emoji-tools">
+          <button class="secondary" id="server-emoji-toggle" type="button" aria-expanded="false" aria-controls="server-emoji-picker">😀 Server emojis</button>
+          <div class="emoji-picker hidden" id="server-emoji-picker">
+            <strong>Server emojis</strong>
+            <input type="text" id="server-emoji-search" placeholder="Search emojis..." aria-label="Search server emojis">
+            <div class="emoji-grid" id="server-emoji-list" aria-live="polite"><div class="emoji-picker-status">Loading emojis...</div></div>
+          </div>
+        </div>
 
         <div class="row-2">
           <div>
@@ -1014,6 +1059,10 @@
   const fColorHex = document.getElementById('f-color-hex');
   const fAuthor = document.getElementById('f-author');
   const fFooter = document.getElementById('f-footer');
+  const serverEmojiToggle = document.getElementById('server-emoji-toggle');
+  const serverEmojiPicker = document.getElementById('server-emoji-picker');
+  const serverEmojiSearch = document.getElementById('server-emoji-search');
+  const serverEmojiList = document.getElementById('server-emoji-list');
   const fTimestamp = document.getElementById('f-timestamp');
   const fieldsContainer = document.getElementById('fields-container');
   const addFieldBtn = document.getElementById('add-field-btn');
@@ -1033,6 +1082,8 @@
   let extraFields = []; // { name, value, inline }
   let editState = null; // { userId, index } when editing an existing feedback
   let manageState = { selectedUserId: null, feedbacks: [] };
+  let serverEmojis = null;
+  let emojiTarget = fDescription;
 
   // -------------------------------------------------------------------
   // Session
@@ -1162,6 +1213,79 @@
     el.classList.toggle('near-limit', currentLength >= max * 0.9);
   }
 
+  function renderServerEmojis() {
+    const query = serverEmojiSearch.value.trim().toLowerCase();
+    const matches = (serverEmojis || []).filter((emoji) => emoji.name.toLowerCase().includes(query));
+    serverEmojiList.innerHTML = '';
+    if (!matches.length) {
+      const status = document.createElement('div');
+      status.className = 'emoji-picker-status';
+      status.textContent = query ? 'No matching emojis.' : 'No server emojis found.';
+      serverEmojiList.appendChild(status);
+      return;
+    }
+    matches.forEach((emoji) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.title = `:${emoji.name}:`;
+      button.setAttribute('aria-label', `Insert :${emoji.name}:`);
+      const image = document.createElement('img');
+      image.src = emoji.url;
+      image.alt = `:${emoji.name}:`;
+      button.appendChild(image);
+      button.addEventListener('click', () => {
+        const target = emojiTarget?.isConnected ? emojiTarget : fDescription;
+        target.focus();
+        const start = target.selectionStart ?? target.value.length;
+        const end = target.selectionEnd ?? start;
+        const availableLength = target.maxLength >= 0
+          ? target.maxLength - (target.value.length - (end - start))
+          : Infinity;
+        if (emoji.markup.length > availableLength) {
+          const warning = document.createElement('div');
+          warning.className = 'emoji-picker-status limit-warning';
+          warning.textContent = 'This emoji would exceed the field character limit.';
+          serverEmojiList.prepend(warning);
+          return;
+        }
+        target.setRangeText(emoji.markup, start, end, 'end');
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      serverEmojiList.appendChild(button);
+    });
+  }
+
+  async function loadServerEmojis() {
+    serverEmojiList.innerHTML = '<div class="emoji-picker-status">Loading emojis...</div>';
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/feedback/emojis`, { headers: authHeaders() });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Could not load server emojis.');
+      serverEmojis = data.emojis || [];
+      renderServerEmojis();
+    } catch (error) {
+      serverEmojiList.innerHTML = '';
+      const status = document.createElement('div');
+      status.className = 'emoji-picker-status';
+      status.textContent = error.message || 'Could not load server emojis.';
+      serverEmojiList.appendChild(status);
+    }
+  }
+
+  serverEmojiToggle.addEventListener('click', async () => {
+    const isOpening = serverEmojiPicker.classList.contains('hidden');
+    serverEmojiPicker.classList.toggle('hidden', !isOpening);
+    serverEmojiToggle.setAttribute('aria-expanded', String(isOpening));
+    if (isOpening && serverEmojis === null) await loadServerEmojis();
+    if (isOpening) serverEmojiSearch.focus();
+  });
+  serverEmojiSearch.addEventListener('input', renderServerEmojis);
+  document.addEventListener('focusin', (event) => {
+    if (event.target.matches('#f-title, #f-description, #f-author, #f-footer, #fields-container input[data-key], #fields-container textarea[data-key]')) {
+      emojiTarget = event.target;
+    }
+  });
+
   function updateCharCounts() {
     setCharCount('count-title', fTitle.value.length, 256);
     setCharCount('count-description', fDescription.value.length, 4096);
@@ -1240,7 +1364,10 @@
   }
 
   function renderMarkdown(text) {
-    const source = String(text || '');
+    const source = String(text || '').replace(/<(a?):([A-Za-z0-9_]{2,32}):(\d{15,25})>/g, (match, animated, name, id) => {
+      const extension = animated ? 'gif' : 'webp';
+      return `<img class="preview-emoji" src="https://cdn.discordapp.com/emojis/${id}.${extension}?size=32" alt=":${name}:" title=":${name}:">`;
+    });
     if (window.marked && window.DOMPurify) {
       const html = window.marked.parse(source, { gfm: true, breaks: true });
       return window.DOMPurify.sanitize(html);
@@ -2066,6 +2193,7 @@
     row.className = 'trainee-assessment';
     const statusOptions = [
       { value: 'awaiting', label: 'waiting' },
+      { value: 'in_progress', label: 'in progress' },
       { value: 'passed', label: 'passed' },
       { value: 'failed', label: 'failed' },
       { value: 'fta', label: 'failed to attend' },
