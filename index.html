@@ -294,9 +294,7 @@
 
   body.calendar-portal .tabs { display: flex; }
   body:not(.calendar-portal) #tab-sessions-btn,
-  body:not(.calendar-portal) #view-sessions,
-  body:not(.calendar-portal) #tab-gts-btn,
-  body:not(.calendar-portal) #view-gts { display: none !important; }
+  body:not(.calendar-portal) #view-sessions { display: none !important; }
 
   .topbar-actions { display: flex; align-items: center; gap: 8px; }
 
@@ -683,13 +681,6 @@
   }
   .type-filter-row button.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-  .gts-layout { display: grid; grid-template-columns: 420px 1fr; gap: 20px; align-items: start; }
-  .gts-preview { display: block; width: 100%; max-height: 260px; object-fit: contain; margin: 12px 0; border-radius: 10px; background: var(--panel-2); }
-  .gts-game-image { display: block; width: 100%; max-height: 420px; object-fit: contain; margin: 12px 0; border-radius: 10px; background: var(--panel-2); }
-  .gts-game-meta { color: var(--muted); font-size: 13px; margin: 8px 0; }
-  .gts-status { display: inline-block; border-radius: 999px; padding: 4px 10px; background: var(--panel-2); font-size: 12px; font-weight: 700; }
-  @media (max-width: 900px) { .gts-layout { grid-template-columns: 1fr; } }
-
   .sessions-layout { display: grid; gap: 16px; }
   .session-card { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 16px; }
   .session-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
@@ -758,7 +749,6 @@
         <button id="tab-submit-btn" class="active">Submit feedback</button>
         <button id="tab-manage-btn">Manage feedbacks</button>
         <button id="tab-calendar-btn">Calendar</button>
-        <button id="tab-gts-btn">GTS</button>
         <button id="tab-sessions-btn">Sessions</button>
       </div>
 
@@ -953,43 +943,6 @@
       </div>
     </div>
 
-    <!-- ---------- GTS VIEW ---------- -->
-    <div class="gts-layout hidden" id="view-gts">
-      <div class="panel">
-        <h2>Publish a Guess The Station game</h2>
-        <div class="hint" style="margin-bottom:16px;">One game can be active at a time. The answer button closes and results are posted automatically at 22:00 French time.</div>
-
-        <label for="gts-host">Host — Discord User ID</label>
-        <input type="text" id="gts-host" placeholder="e.g. 123456789012345678" inputmode="numeric">
-
-        <label for="gts-image">Station screenshot</label>
-        <input type="file" id="gts-image" accept="image/png,image/jpeg,image/gif,image/webp">
-        <div class="hint">PNG, JPEG, GIF, or WebP · maximum 8 MB.</div>
-        <img id="gts-image-preview" class="gts-preview hidden" alt="GTS screenshot preview">
-
-        <label for="gts-description">Description / note</label>
-        <textarea id="gts-description" maxlength="1500" placeholder="Add a hint or description for the station screenshot."></textarea>
-
-        <label for="gts-answer">Correct station</label>
-        <input type="text" id="gts-answer" list="gts-stations" maxlength="100" autocomplete="off" placeholder="Choose a station from the list">
-        <datalist id="gts-stations"></datalist>
-
-        <div class="error-msg" id="gts-error"></div>
-        <div class="success-msg" id="gts-success"></div>
-        <div class="actions">
-          <button id="gts-submit-btn" type="button">Publish GTS</button>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="session-heading">
-          <h2>Current / latest game</h2>
-          <button class="secondary icon-btn" id="gts-refresh-btn" type="button">Refresh</button>
-        </div>
-        <div id="gts-current-game"><div class="manage-empty">Loading...</div></div>
-      </div>
-    </div>
-
     <!-- ---------- TRAINING SESSIONS VIEW ---------- -->
     <div class="sessions-layout hidden" id="view-sessions">
       <div class="panel">
@@ -1093,12 +1046,10 @@
   const tabSubmitBtn = document.getElementById('tab-submit-btn');
   const tabManageBtn = document.getElementById('tab-manage-btn');
   const tabCalendarBtn = document.getElementById('tab-calendar-btn');
-  const tabGtsBtn = document.getElementById('tab-gts-btn');
   const tabSessionsBtn = document.getElementById('tab-sessions-btn');
   const viewSubmit = document.getElementById('view-submit');
   const viewManage = document.getElementById('view-manage');
   const viewCalendar = document.getElementById('view-calendar');
-  const viewGts = document.getElementById('view-gts');
   const viewSessions = document.getElementById('view-sessions');
 
   const fTargetUser = document.getElementById('f-target-user');
@@ -1228,19 +1179,16 @@
     const isSubmit = tab === 'submit';
     const isManage = tab === 'manage';
     const isCalendar = tab === 'calendar';
-    const isGts = tab === 'gts';
     const isSessions = tab === 'sessions';
 
     viewSubmit.classList.toggle('hidden', !isSubmit);
     viewManage.classList.toggle('hidden', !isManage);
     viewCalendar.classList.toggle('hidden', !isCalendar);
-    viewGts.classList.toggle('hidden', !isGts);
     viewSessions.classList.toggle('hidden', !isSessions);
 
     tabSubmitBtn.classList.toggle('active', isSubmit);
     tabManageBtn.classList.toggle('active', isManage);
     tabCalendarBtn.classList.toggle('active', isCalendar);
-    tabGtsBtn.classList.toggle('active', isGts);
     tabSessionsBtn.classList.toggle('active', isSessions);
 
     if (isManage) loadUsersList();
@@ -1248,16 +1196,11 @@
       loadTrainingsList();
       loadQueueCounts();
     }
-    if (isGts) {
-      loadGtsStations();
-      loadGtsGame();
-    }
     if (isSessions) loadTrainingSessions();
   }
   tabSubmitBtn.addEventListener('click', () => switchTab('submit'));
   tabManageBtn.addEventListener('click', () => switchTab('manage'));
   tabCalendarBtn.addEventListener('click', () => switchTab('calendar'));
-  tabGtsBtn.addEventListener('click', () => switchTab('gts'));
   tabSessionsBtn.addEventListener('click', () => switchTab('sessions'));
 
   // -------------------------------------------------------------------
@@ -2393,197 +2336,6 @@
       alert(err.message || 'Could not reach the server.');
     }
   }
-
-  const gtsHostInput = document.getElementById('gts-host');
-  const gtsImageInput = document.getElementById('gts-image');
-  const gtsImagePreview = document.getElementById('gts-image-preview');
-  const gtsDescriptionInput = document.getElementById('gts-description');
-  const gtsAnswerInput = document.getElementById('gts-answer');
-  const gtsStationsList = document.getElementById('gts-stations');
-  const gtsError = document.getElementById('gts-error');
-  const gtsSuccess = document.getElementById('gts-success');
-  const gtsSubmitBtn = document.getElementById('gts-submit-btn');
-  const gtsCurrentGame = document.getElementById('gts-current-game');
-  let gtsStations = [];
-  let gtsPreviewUrl = '';
-
-  function clearGtsPreviewUrl() {
-    if (gtsPreviewUrl) URL.revokeObjectURL(gtsPreviewUrl);
-    gtsPreviewUrl = '';
-  }
-
-  gtsImageInput.addEventListener('change', () => {
-    clearGtsPreviewUrl();
-    const file = gtsImageInput.files[0];
-    gtsImagePreview.classList.toggle('hidden', !file);
-    if (!file) {
-      gtsImagePreview.removeAttribute('src');
-      return;
-    }
-    gtsPreviewUrl = URL.createObjectURL(file);
-    gtsImagePreview.src = gtsPreviewUrl;
-  });
-
-  async function loadGtsStations() {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/gts/stations`, { headers: authHeaders() });
-      const data = await res.json();
-      if (res.status === 401) {
-        clearToken();
-        showLogin();
-        loginError.textContent = 'Session expired, please log in again.';
-        return;
-      }
-      if (!res.ok || !Array.isArray(data.stations)) throw new Error(data.error || 'Could not load the station list.');
-      gtsStations = data.stations;
-      gtsStationsList.replaceChildren(...gtsStations.map((station) => {
-        const option = document.createElement('option');
-        option.value = station;
-        return option;
-      }));
-      gtsError.textContent = '';
-    } catch (err) {
-      gtsError.textContent = err.message || 'Could not reach the server while loading stations.';
-    }
-  }
-
-  function gtsDateTime(dateValue) {
-    return new Date(dateValue).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) + ' (heure française)';
-  }
-
-  function renderGtsGame(game) {
-    gtsCurrentGame.replaceChildren();
-    if (!game) {
-      const empty = document.createElement('div');
-      empty.className = 'manage-empty';
-      empty.textContent = 'No GTS game has been published yet.';
-      gtsCurrentGame.append(empty);
-      return;
-    }
-
-    const status = document.createElement('span');
-    status.className = 'gts-status';
-    status.textContent = game.status === 'active' ? 'Answers open' : 'Results published';
-    gtsCurrentGame.append(status);
-
-    const description = document.createElement('p');
-    description.textContent = game.description;
-    gtsCurrentGame.append(description);
-
-    if (game.imageUrl) {
-      const image = document.createElement('img');
-      image.className = 'gts-game-image';
-      image.src = game.imageUrl;
-      image.alt = 'Published GTS station screenshot';
-      gtsCurrentGame.append(image);
-    }
-
-    const details = document.createElement('div');
-    details.className = 'gts-game-meta';
-    details.textContent = `Host: ${game.hostId} · Closes: ${gtsDateTime(game.deadlineAt)}`;
-    gtsCurrentGame.append(details);
-
-    if (game.status === 'completed') {
-      const results = document.createElement('p');
-      const winners = Array.isArray(game.winners) ? game.winners : [];
-      results.textContent = `${(game.participants || []).length} participant(s), ${winners.length} winner(s): ${winners.map((winner) => winner.username).join(', ') || 'none'}`;
-      gtsCurrentGame.append(results);
-    }
-  }
-
-  async function loadGtsGame() {
-    gtsCurrentGame.textContent = 'Loading...';
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/gts`, { headers: authHeaders() });
-      const data = await res.json();
-      if (res.status === 401) {
-        clearToken();
-        showLogin();
-        loginError.textContent = 'Session expired, please log in again.';
-        return;
-      }
-      if (!res.ok) throw new Error(data.error || 'Could not load the current GTS game.');
-      renderGtsGame(data.game);
-    } catch (err) {
-      gtsCurrentGame.textContent = err.message || 'Could not reach the server.';
-    }
-  }
-
-  async function readGtsImageDataUrl(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error('Could not read the selected image.'));
-      reader.readAsDataURL(file);
-    });
-  }
-
-  gtsSubmitBtn.addEventListener('click', async () => {
-    gtsError.textContent = '';
-    gtsSuccess.textContent = '';
-    const image = gtsImageInput.files[0];
-    const hostId = gtsHostInput.value.trim();
-    const answer = gtsAnswerInput.value.trim();
-    if (!/^\d{15,25}$/.test(hostId)) {
-      gtsError.textContent = 'Enter a valid Discord user ID for the host.';
-      return;
-    }
-    if (!image) {
-      gtsError.textContent = 'Choose the station screenshot.';
-      return;
-    }
-    if (image.size > 8 * 1024 * 1024) {
-      gtsError.textContent = 'The image must be smaller than 8 MB.';
-      return;
-    }
-    if (!gtsDescriptionInput.value.trim()) {
-      gtsError.textContent = 'Enter a description or note for the game.';
-      return;
-    }
-    const canonicalAnswer = gtsStations.find((station) => station.trim().toLocaleLowerCase('en') === answer.toLocaleLowerCase('en'));
-    if (!canonicalAnswer) {
-      gtsError.textContent = 'Choose the correct station from the official station list.';
-      return;
-    }
-
-    gtsSubmitBtn.disabled = true;
-    try {
-      const dataUrl = await readGtsImageDataUrl(image);
-      const res = await fetch(`${API_BASE_URL}/api/gts`, {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify({
-          hostId,
-          description: gtsDescriptionInput.value.trim(),
-          answer: canonicalAnswer,
-          dataUrl
-        })
-      });
-      const data = await res.json();
-      if (res.status === 401) {
-        clearToken();
-        showLogin();
-        loginError.textContent = 'Session expired, please log in again.';
-        return;
-      }
-      if (!res.ok) throw new Error(data.error || 'Could not publish this GTS game.');
-      gtsSuccess.textContent = 'GTS published in Discord. Results will be posted at 22:00 French time.';
-      gtsHostInput.value = '';
-      gtsImageInput.value = '';
-      gtsDescriptionInput.value = '';
-      gtsAnswerInput.value = '';
-      clearGtsPreviewUrl();
-      gtsImagePreview.removeAttribute('src');
-      gtsImagePreview.classList.add('hidden');
-      await loadGtsGame();
-    } catch (err) {
-      gtsError.textContent = err.message || 'Could not reach the server.';
-    } finally {
-      gtsSubmitBtn.disabled = false;
-    }
-  });
-
-  document.getElementById('gts-refresh-btn').addEventListener('click', loadGtsGame);
 
   sessionsRefreshBtn.addEventListener('click', loadTrainingSessions);
 
