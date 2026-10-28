@@ -869,7 +869,7 @@
 
         <h2>Schedule a training</h2>
 
-        <div class="row-2">
+        <div>
           <div>
             <label for="t-type">Type</label>
             <select id="t-type">
@@ -877,13 +877,6 @@
               <option value="DS">DS — Dispatcher</option>
               <option value="GD">GD — Guard</option>
               <option value="SG">SG — Signaller</option>
-            </select>
-          </div>
-          <div id="t-subtype-wrap">
-            <label for="t-subtype">Subtype</label>
-            <select id="t-subtype">
-              <option value="Practical">Practical</option>
-              <option value="Assessment">Assessment</option>
             </select>
           </div>
         </div>
@@ -964,7 +957,7 @@
   // -------------------------------------------------------------------
   // CONFIG
   // -------------------------------------------------------------------
-  const API_BASE_URL = "https://feedback.wispbyte.app";
+  const API_BASE_URL = "";
   const portalPath = window.location.pathname.replace(/\/+$/, '');
   const portalQuery = new URLSearchParams(window.location.search).get('portal');
   const PORTAL_SCOPE = portalQuery === 'calendar' || portalPath === '/calendar' || portalPath.endsWith('/calendar')
@@ -1763,8 +1756,6 @@
   // =====================================================================
 
   const tType = document.getElementById('t-type');
-  const tSubtypeWrap = document.getElementById('t-subtype-wrap');
-  const tSubtype = document.getElementById('t-subtype');
   const tHost = document.getElementById('t-host');
   const cohostContainer = document.getElementById('cohost-container');
   const addCohostBtn = document.getElementById('add-cohost-btn');
@@ -1825,16 +1816,8 @@
     renderCohostRows();
   });
 
-  function updateSubtypeVisibility() {
-    tSubtypeWrap.style.display = tType.value === 'SG' ? '' : 'none';
-  }
-  tType.addEventListener('change', updateSubtypeVisibility);
-  updateSubtypeVisibility();
-
   function resetTrainingForm() {
     tType.value = 'QD';
-    updateSubtypeVisibility();
-    tSubtype.value = 'Practical';
     tHost.value = '';
     cohostIds = [''];
     renderCohostRows();
@@ -1921,7 +1904,6 @@
 
     const payload = {
       type: tType.value,
-      subtype: tType.value === 'SG' ? tSubtype.value : undefined,
       hostId: tHost.value.trim(),
       cohostIds: cleanCohosts,
       startTime,
@@ -2046,7 +2028,7 @@
       card.innerHTML = `
         <div class="training-card-top">
           <div style="min-width:0;">
-            <div class="training-type-badge">${meta.emoji} ${escapeHtml(meta.label)}${training.subtype ? ' — ' + escapeHtml(training.subtype) : ''}</div>
+            <div class="training-type-badge">${meta.emoji} ${escapeHtml(meta.label)}</div>
             <div class="tc-when">${formatUtcDateTime(start)} GMT+00 → ${formatUtcTime(end)} GMT+00</div>
             <div class="tc-meta">Host: <code>${escapeHtml(training.hostId)}</code> · Co-hosts: <code>${escapeHtml(cohosts)}</code> · ${training.durationMinutes} min</div>
             ${training.note ? `<div class="tc-note">${escapeHtml(training.note)}</div>` : ''}
@@ -2139,7 +2121,7 @@
       card.innerHTML = `
         <div class="session-heading">
           <div>
-            <h3>${meta.emoji} ${escapeHtml(meta.label)}${session.subtype ? ` — ${escapeHtml(session.subtype)}` : ''}</h3>
+            <h3>${meta.emoji} ${escapeHtml(meta.label)}</h3>
             <div class="session-meta">Host: ${escapeHtml(session.hostId)} · Co-hosts: ${escapeHtml((session.cohostIds || []).join(', ') || 'none')} · Started ${formatUtcDateTime(new Date(session.startedAt))} GMT+00</div>
           </div>
           <button class="danger icon-btn" data-action="end" type="button">End training</button>
@@ -2343,8 +2325,6 @@
     trainingEditId = training.id;
 
     tType.value = training.type;
-    updateSubtypeVisibility();
-    if (training.subtype) tSubtype.value = training.subtype;
     tHost.value = training.hostId;
     cohostIds = (training.cohostIds || []).length ? [...training.cohostIds] : [''];
     renderCohostRows();
