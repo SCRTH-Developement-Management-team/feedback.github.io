@@ -1,52 +1,60 @@
 # SCRTH CALENDAR SYSTEM INSTRUCTION[^1]
-<img width="1385" height="842" alt="image" src="https://github.com/user-attachments/assets/8691b511-9210-4fef-a575-3436c696d622" />
+<img width="916" height="1080" alt="image" src="https://github.com/user-attachments/assets/5ef3796b-7e8f-4e3d-ae99-5c91e0662787" />
 
-> **Green** : Training type `QD/DS/GD/SG`.
-> 
-> **Orange** : Training subtype (will only appear with SG training selected).
-> 
-> **Blue** : The discord host ID, ex `843009938661048331`.
+
+> **Pink** : Training type, it's either `QD` ; `DS` ; `GD` `SG`.
 >
-> **Cyan** : Co host IDs, you can add an infinity of co-host.
+> **Yellow** : Discord host ID, ex : `843009938661048331`.
 >
-> **Yellow** : Start time, uses the DD/MM/YYYY timestamp. ex : `24/09/2026` on **GMT+00** format.
+> **Light green** : Discord co-host ID(s), ex `1431253098055078029`. You may add multiple co-host by clicking on the "Add a co-host" button.
 >
-> **Pink** The duration in minutes, by default it's `60` minutes.
+> **Red** : The training date, current date is highlited with a red circle.
 >
-> **Purple** : The note that can be added in the training message.
+> **Purple** : The training start time on **`GMT+0`** format.
 >
-> **Red** : the training queue.
+> **White** : The training duration, by default it's `60` minutes.
 >
-> **White**  : Upcoming training select view, by default it's `All`.
+> **Cyan** : Training note. (optional)
+>
+> **Dark green** : The server link that will be sent once the training will start.
+
+> [!WARNING]
+> Putting a link that has nothing to do like a link that can comprimise your account or anything NSFW will lead to a server ban **without any further notice**.
+
+> [!TIP]
+> Always check the training type before scheduling the training so you don't make a ghost ping !
 
 
 # MANAGING SESSIONS WITH INTEGRATED TCS
-<img width="1362" height="672" alt="image" src="https://github.com/user-attachments/assets/788c6613-ec86-403c-9f91-172fbc35b1d3" />
+<img width="1217" height="892" alt="image" src="https://github.com/user-attachments/assets/689d3d26-61d4-466b-9c80-a4577ba75a93" />
 
+> **Brown** : The field where you can add trainees to the training, useless in SG training.
+>
+> **Orange** : The place where you'll add the end training screenshot, once you uploaded the file, click on the "upload screenshot" ping button and it will be added in the bot. Although it will mark it as empty.
+>
+> **White** : The trainees, added automatically.
+>
+> **Green** : The level and zone field, done when trainees sign up via the sign-up button.
+>
+> **Purple** : Trainees status, there is currently **5** options: `awaiting` ; `passed` ; `failed` ; `FTA` ; `ìn progress`.
+>
+> **Red** : Assessor, users fetched from the `user.js` file on SCRTH Trainer.
+>
+> **Dark blue** : The fail reason field, must only be inputted when the trainee failed.
+>
+> **Pink** : Click it always after making a change to a trainee (one trainee one by one).
+>
+> **Cyan** : Trainee remove button, if the user fail to attend, you must set "FTA" field instead.
+>
+> **Dark green** : User feedback field ⬇️
 
-> **Pink** : The button to end the training, please only click when you know that it's 100% finished.
->
-> **Maroon** : Enter the trainee username and click on the button to add them.
->
-> **Red** : Trainees usernames ex : `le_toaster`.
->
-> **Yellow** : The trainee status, there is `awaiting` & `passed` & `failed`.
->
-> **Blue** : The trainee assessor, I won't list all of them but there is all of the current SV+.
->
-> **Green** : The failed raison of the trainee.
->
-> **Purple** : Click here to save what you did on a trainee ex : setting it status or it's assessor.
+<img width="890" height="788" alt="Capture d&#39;écran 2026-10-29 201513" src="https://github.com/user-attachments/assets/c44db85a-ba03-4861-bd3b-08f0e486f7e7" />
 
-> [!NOTE]
-> We added a `remove` button to remove the trainee, this button is not on the picture but it's located near the `save` button.
->
-> When users click on the `sign up` button, they are directly registered in the session database which mean that you do not have to write their name. However, if they **fail to attend the training**, please mark them as failed and put as the reason : `FAILED TO ATTEND`. It will one day be logged and actions would be taken.
-
+- You must always save the feedback when adding an image.
+> [!WARNING]
+> Putting innapripriate image will lead to a server ban, without any further notice.
 
 > [!IMPORTANT]
 >
 > Always **SAVE** after doing actions with the trainees, you can only save a trainee at a time. 
-
-
 [^1]: portal link https://scrth-developement-management-team.github.io/feedback.github.io/?portal=calendar
