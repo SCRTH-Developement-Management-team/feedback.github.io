@@ -32,7 +32,7 @@
 
   .hidden { display: none !important; }
 
-  /* ---------- Shared bits ---------- */
+
 
   .center-screen {
     min-height: calc(100vh - 48px);
@@ -201,7 +201,7 @@
     min-height: 16px;
   }
 
-  /* ---------- Login screen ---------- */
+
 
   .login-card {
     width: 100%;
@@ -235,7 +235,6 @@
   .login-card label { justify-content: flex-start; }
   .login-card .portal-link { display: flex; width: 100%; margin-top: 8px; }
 
-  /* ---------- Shell (topbar + tabs) ---------- */
 
   .shell { max-width: 1080px; margin: 0 auto; }
 
@@ -298,7 +297,6 @@
 
   .topbar-actions { display: flex; align-items: center; gap: 8px; }
 
-  /* ---------- Submit view ---------- */
 
   .app {
     width: 100%;
@@ -385,7 +383,6 @@
     gap: 12px;
   }
 
-  /* ---------- Discord-style embed preview ---------- */
 
   .discord-preview {
     background: var(--panel-2);
@@ -499,7 +496,6 @@
     margin-top: 20px;
   }
 
-  /* ---------- Manage view ---------- */
 
   .manage-view {
     display: grid;
@@ -527,7 +523,9 @@
   }
   .user-row:hover { border-color: var(--accent); }
   .user-row.active { border-color: var(--accent); background: var(--accent-soft); }
-  .user-row .uid { font-family: monospace; color: var(--text); overflow-wrap: anywhere; }
+  .user-row .user-label { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .user-row .username { overflow-wrap: anywhere; }
+  .user-row .uid { font-family: monospace; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
   .user-row .count {
     flex-shrink: 0;
     background: var(--panel);
@@ -595,7 +593,6 @@
     text-align: center;
   }
 
-  /* ---------- Calendar view ---------- */
 
   .calendar-layout {
     display: grid;
@@ -817,7 +814,6 @@
 </head>
 <body>
 
-  <!-- ============ LOGIN SCREEN ============ -->
   <div class="center-screen" id="login-screen-wrap">
     <div class="login-card" id="login-screen">
       <div id="login-logo-slot"></div>
@@ -837,7 +833,6 @@
     </div>
   </div>
 
-  <!-- ============ MAIN SHELL ============ -->
   <div class="shell hidden" id="app-screen">
     <div class="topbar">
       <div class="topbar-brand">
@@ -861,7 +856,6 @@
       </div>
     </div>
 
-    <!-- ---------- SUBMIT VIEW ---------- -->
     <div class="app" id="view-submit">
       <div class="panel">
         <div class="edit-banner hidden" id="edit-banner">
@@ -947,7 +941,6 @@
       </div>
     </div>
 
-    <!-- ---------- MANAGE VIEW ---------- -->
     <div class="manage-view hidden" id="view-manage">
       <div class="panel">
         <h2>Users with feedback</h2>
@@ -962,7 +955,6 @@
       </div>
     </div>
 
-    <!-- ---------- CALENDAR VIEW ---------- -->
     <div class="calendar-layout hidden" id="view-calendar">
       <div class="panel">
         <div class="edit-banner hidden" id="training-edit-banner">
@@ -1062,7 +1054,6 @@
       </div>
     </div>
 
-    <!-- ---------- TRAINING SESSIONS VIEW ---------- -->
     <div class="sessions-layout hidden" id="view-sessions">
       <div class="panel">
         <div class="session-heading">
@@ -1109,7 +1100,7 @@
   // -------------------------------------------------------------------
   // CONFIG
   // -------------------------------------------------------------------
-  const API_BASE_URL = "https://feedback.wispbyte.app";
+  const API_BASE_URL = "https://feedback.wispbyte.app"; // https://feedback.wispbyte.app 
   const portalPath = window.location.pathname.replace(/\/+$/, '');
   const portalQuery = new URLSearchParams(window.location.search).get('portal');
   const PORTAL_SCOPE = portalQuery === 'calendar' || portalPath === '/calendar' || portalPath.endsWith('/calendar')
@@ -1121,9 +1112,7 @@
   };
   document.body.classList.toggle('calendar-portal', PORTAL_SCOPE === 'calendar');
 
-  // Fill these in to brand the site with your organization's identity.
-  // ORG_LOGO_URL: a direct link to your logo image (square works best).
-  // Leave it empty ("") to show an auto-generated placeholder badge instead.
+
   const ORG_NAME = "SCRTH";
   const ORG_LOGO_URL = "https://images-ext-1.discordapp.net/external/XIGW6-AkXgL-zKJ_PazqP3YEymlPN2k58WCnh7IZr3c/https/message.style/cdn/images/fde4f74bac334b68717dabf56c3a1e40126b37e0a6cb617ad4eac33b327ba5ea.png?format=webp&quality=lossless";
 
@@ -1134,9 +1123,7 @@
     SG: { label: 'SG — Signaller', emoji: '🟢' }
   };
 
-  // -------------------------------------------------------------------
-  // Branding: inject logo (or placeholder) wherever it's needed
-  // -------------------------------------------------------------------
+
   function initials(name) {
     return name
       .split(/\s+/)
@@ -1224,8 +1211,8 @@
   const feedbacksTitle = document.getElementById('feedbacks-title');
   const feedbacksList = document.getElementById('feedbacks-list');
 
-  let extraFields = []; // { name, value, inline }
-  let editState = null; // { userId, index } when editing an existing feedback
+  let extraFields = []; 
+  let editState = null; 
   let manageState = { selectedUserId: null, feedbacks: [] };
   let serverEmojis = null;
   let emojiTarget = fDescription;
@@ -1493,7 +1480,7 @@
   }
 
   addFieldBtn.addEventListener('click', () => {
-    if (extraFields.length >= 25) return; // Discord's limit
+    if (extraFields.length >= 25) return; 
     extraFields.push({ name: '', value: '', inline: true });
     renderFieldRows();
     updatePreview();
@@ -1721,10 +1708,10 @@
       }
 
       usersList.innerHTML = '';
-      data.users.forEach(({ userId, count }) => {
+      data.users.forEach(({ userId, name, count }) => {
         const row = document.createElement('div');
         row.className = 'user-row' + (manageState.selectedUserId === userId ? ' active' : '');
-        row.innerHTML = `<span class="uid">${escapeHtml(userId)}</span><span class="count">${count}</span>`;
+        row.innerHTML = `<span class="user-label"><span class="username">${escapeHtml(name || userId)}</span><span class="uid">${escapeHtml(userId)}</span></span><span class="count">${count}</span>`;
         row.addEventListener('click', () => loadUserFeedbacks(userId));
         usersList.appendChild(row);
       });
@@ -1741,7 +1728,7 @@
     feedbacksTitle.textContent = `Feedbacks for ${userId}`;
     feedbacksList.innerHTML = '<div class="manage-empty">Loading...</div>';
 
-    // Re-render the user list so the active row is highlighted
+
     loadUsersList();
 
     try {
@@ -1950,8 +1937,8 @@
   const traineeFeedbackImageNameList = document.getElementById('trainee-feedback-image-names');
   const traineeFeedbackSavedCountLabel = document.getElementById('trainee-feedback-saved-count');
 
-  let cohostIds = ['']; // list of raw input strings
-  let trainingEditId = null; // id of the training being edited, or null
+  let cohostIds = [''];
+  let trainingEditId = null;
   let activeTraineeFeedback = null;
   let feedbackImagePreviewUrls = [];
 
@@ -2297,7 +2284,6 @@
         chip.querySelector('.qc-count').textContent = data.counts[type] ?? '–';
       });
     } catch (err) {
-      // Silently ignore — the summary just stays on its previous values.
     }
   }
 
